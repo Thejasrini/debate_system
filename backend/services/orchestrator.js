@@ -1,8 +1,9 @@
 import { intentAgent } from "../agents/intentAgent.js";
+import { caseReasoningAgent } from "../agents/caseReasoningAgent.js";
+import { retrieveHybridLegalKnowledge } from "./hybridRetriever.js";
 import { supportAgent } from "../agents/supportAgent.js";
 import { opposeAgent } from "../agents/opposeAgent.js";
 import { judgeAgent } from "../agents/judgeAgent.js";
-import { retrieveRelevantSections } from "./retriever.js";
 import { validateAgentOutput } from "./groundingValidator.js";
 
 // List of allowed consumer-law-relevant category keywords for Consumer Protection Act, 2019
@@ -19,105 +20,100 @@ const IN_SCOPE_KEYWORDS = [
 ];
 
 function isCategoryInScope(category = "") {
+  if (!category || typeof category !== "string") return true;
   const catClean = category.toLowerCase().trim();
   return IN_SCOPE_KEYWORDS.some((keyword) => catClean.includes(keyword));
 }
 
 /**
- * Executes full courtroom debate with RAG retrieval, domain classification, and grounding validation.
- * Supports optional live event streaming callback `onEvent(eventType, data)` and conversation `history`.
- * 
- * @param {string} question 
- * @param {string} customContext 
- * @param {function} onEvent Optional streaming callback (eventType, data) => void
- * @param {Array} history Optional prior conversation turns [{ question, judge: { decision } }]
+ * Fast Parallel Orchestrator with live step-by-step progress events.
  */
 export async function runDebate(question, customContext = "", onEvent = null, history = []) {
-  console.log("⚖ LexAgent Started");
+  console.log("⚖ LexAgent Fast Multi-Agent Pipeline Started");
 
   const emit = (eventType, data) => {
     if (typeof onEvent === "function") {
       try {
         onEvent(eventType, data);
       } catch (err) {
-        console.warn(`⚠️ Error in onEvent listener for '${eventType}':`, err.message);
+        console.warn(`⚠️ Error emitting '${eventType}':`, err.message);
       }
     }
   };
 
   // 1. STEP 1: Domain Intent Classification
-  console.log("🔍 Classifying question domain intent...");
-  
-  // Construct context-rich query for intent classifier if follow-up
-  const intentSearchQuery = history.length > 0
-    ? `${question} (Prior context: ${history.map(h => h.question).slice(-2).join("; ")})`
-    : question;
+  emit("status", { message: "🔍 Step 1/5: Classifying domain intent under CPA 2019..." });
+  let category = "General Consumer Law";
+  let confidence = 80;
+  let inScope = true;
 
-  const intentResult = await intentAgent(intentSearchQuery);
-  const { category, confidence } = intentResult;
-  console.log(`🏷️ Domain Category Detected: "${category}" (Confidence: ${confidence}%)`);
+  try {
+    const intentSearchQuery = history.length > 0
+      ? `${question} (Prior context: ${history.map(h => h.question).slice(-2).join("; ")})`
+      : question;
 
-  const inScope = isCategoryInScope(category) && confidence >= 50;
+    const intentResult = await intentAgent(intentSearchQuery);
+    if (intentResult && typeof intentResult === "object" && intentResult.category) {
+      category = intentResult.category;
+      confidence = intentResult.confidence !== undefined ? intentResult.confidence : 80;
+      inScope = isCategoryInScope(category) && confidence >= 50;
+    }
+  } catch (err) {
+    console.warn("⚠️ intentAgent error, failing open:", err.message);
+  }
 
-  // Short-circuit if out of scope or low confidence
+  // Short-circuit if out of scope
   if (!inScope) {
-    console.log(`🛑 OUT OF SCOPE: "${category}" is not covered by Consumer Protection Act 2019 corpus.`);
+    console.log(`🛑 OUT OF SCOPE: "${category}"`);
     const outOfScopeResult = {
       question,
       outOfScope: true,
       category,
       confidence,
-      message: `This system currently covers Indian Consumer Protection Act, 2019 matters only. Your question appears to be about ${category} which isn't supported yet.`
+      message: `This system currently only supports Indian Consumer Protection Act, 2019 related questions. Your question appears to be about: ${category}. Please rephrase as a consumer law issue or check back as more legal domains are added.`
     };
     emit("outOfScope", outOfScopeResult);
     emit("done", {});
     return outOfScopeResult;
   }
 
-  // Emit classified intent event
   emit("intent", { category, confidence });
 
-  // 2. STEP 2: RAG Context Retrieval (combining new question + recent history for context retention)
-  let context = customContext;
+  // 2. STEP 2: Case Understanding & Factual Reasoning (pass history to prevent repetition)
+  emit("status", { message: "🧩 Step 2/5: Extracting structured facts & legal issues..." });
+  const caseRepresentation = await caseReasoningAgent(question, history);
+  emit("caseReasoning", caseRepresentation);
 
-  if (!context) {
-    try {
-      const ragSearchQuery = history.length > 0
-        ? `${question} ${history.map(t => t.question).slice(-2).join(" ")}`
-        : question;
+  // 3. STEP 3: Multi-Source Hybrid Knowledge Retrieval
+  emit("status", { message: "📖 Step 3/5: Searching CPA 2019 statutes, rules & precedents..." });
+  const hybridKnowledge = await retrieveHybridLegalKnowledge(caseRepresentation, question);
+  
+  const retrievedContext = [
+    ...(hybridKnowledge.statutory_sections || []).map(s => `[${s.section} - ${s.title}]\n${s.text}`),
+    ...(hybridKnowledge.official_rules || []).map(r => `[${r.document_name} - ${r.rule}]\n${r.text}`),
+    ...(hybridKnowledge.verified_precedents || []).map(p => `[Precedent: ${p.case_name} (${p.citation})]\n${p.facts_summary}`)
+  ].join("\n\n");
 
-      const relevantSections = await retrieveRelevantSections(ragSearchQuery, 4);
-      if (relevantSections && relevantSections.length > 0) {
-        context = relevantSections
-          .map((r) => `[${r.metadata.section} - ${r.metadata.title} (Page ${r.metadata.page})]\n${r.text}`)
-          .join("\n\n");
-        console.log(`📖 RAG retrieved ${relevantSections.length} relevant sections from Consumer Protection Act 2019`);
-      }
-    } catch (err) {
-      console.warn("⚠️ RAG Retrieval warning:", err.message);
-    }
-  }
+  emit("retrieval", hybridKnowledge);
 
-  // 3. Support Agent execution & validation
-  const rawSupport = await supportAgent(question, context, history);
-  const support = validateAgentOutput("Support", rawSupport, context);
-  console.log("Support Validated & Emitted");
+  // 4. STEP 4: Parallel Support & Oppose Counsel Execution
+  emit("status", { message: "⚖️ Step 4/5: Formulating Support & Oppose Counsel arguments in parallel..." });
+  
+  const [rawSupport, rawOppose] = await Promise.all([
+    supportAgent(caseRepresentation, hybridKnowledge, history),
+    opposeAgent(caseRepresentation, hybridKnowledge, history)
+  ]);
+
+  const support = validateAgentOutput("Support", rawSupport, retrievedContext);
   emit("support", support);
 
-  await new Promise((resolve) => setTimeout(resolve, 600));
-
-  // 4. Oppose Agent execution & validation
-  const rawOppose = await opposeAgent(question, context, history);
-  const oppose = validateAgentOutput("Oppose", rawOppose, context);
-  console.log("Oppose Validated & Emitted");
+  const oppose = validateAgentOutput("Oppose", rawOppose, retrievedContext);
   emit("oppose", oppose);
 
-  await new Promise((resolve) => setTimeout(resolve, 600));
-
-  // 5. Judge Agent execution & validation
-  const rawJudge = await judgeAgent(question, support, oppose, context, history);
-  const judge = validateAgentOutput("Judge", rawJudge, context);
-  console.log("Judge Validated & Emitted");
+  // 5. STEP 5: Judicial Bench Adjudication
+  emit("status", { message: "🔨 Step 5/5: Judicial Bench evaluating evidence & rendering verdict..." });
+  const rawJudge = await judgeAgent(caseRepresentation, hybridKnowledge, support, oppose, history);
+  const judge = validateAgentOutput("Judge", rawJudge, retrievedContext);
   emit("judge", judge);
 
   emit("done", {});
@@ -126,7 +122,9 @@ export async function runDebate(question, customContext = "", onEvent = null, hi
     question,
     category,
     outOfScope: false,
-    retrievedContext: context,
+    caseRepresentation,
+    hybridKnowledge,
+    retrievedContext,
     support,
     oppose,
     judge

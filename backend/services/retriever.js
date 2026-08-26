@@ -24,6 +24,36 @@ export function isHistoricalChunk(text = "", metadata = {}) {
 }
 
 /**
+ * Normalizes Section metadata to extract specific sub-sections (e.g. Section 2(10), 2(11), 2(47))
+ * instead of returning plain 'Section 2' repetitively.
+ * 
+ * @param {string} text 
+ * @param {string} rawSection 
+ * @returns {string} Precise Section Identifier
+ */
+export function normalizeSectionIdentifier(text = "", rawSection = "Section N/A") {
+  if (!text || typeof text !== "string") return rawSection;
+
+  // Extract explicit section numbers if present in chunk heading/body
+  const specificMatch = text.match(/Section\s+\d+\s*\(\d+\)/i);
+  if (specificMatch) {
+    return specificMatch[0];
+  }
+
+  // Sub-section matching for Section 2 (Definitions)
+  if (rawSection.trim() === "Section 2" || /definitions/i.test(text)) {
+    if (/\(10\)/.test(text) || /defect/i.test(text)) return "Section 2(10)";
+    if (/\(11\)/.test(text) || /deficiency/i.test(text)) return "Section 2(11)";
+    if (/\(28\)/.test(text) || /misleading advertisement/i.test(text)) return "Section 2(28)";
+    if (/\(47\)/.test(text) || /unfair trade practice/i.test(text)) return "Section 2(47)";
+    if (/\(7\)/.test(text) || /consumer/i.test(text)) return "Section 2(7)";
+    if (/\(46\)/.test(text) || /unfair contract/i.test(text)) return "Section 2(46)";
+  }
+
+  return rawSection;
+}
+
+/**
  * Retrieves the topK most relevant legal sections for a user query.
  * Prioritizes current Consumer Protection Act 2019 provisions over historical appendix text.
  * 
@@ -64,9 +94,13 @@ export async function retrieveRelevantSections(query, topK = 3) {
     const baseScore = Number((1 / (1 + distance)).toFixed(4));
 
     const rawMeta = metadatas[idx] || {};
+    const rawSec = rawMeta.section || "Section N/A";
+    const preciseSection = normalizeSectionIdentifier(doc, rawSec);
+
     const metadata = {
       act: rawMeta.act || "Consumer Protection Act, 2019",
-      section: rawMeta.section || "Section N/A",
+      section: preciseSection,
+      raw_section: rawSec,
       title: rawMeta.title || "Legal Provision",
       page: rawMeta.page !== undefined ? Number(rawMeta.page) : 1,
       source: rawMeta.source || "Consumer_Protection_Act_2019.pdf",

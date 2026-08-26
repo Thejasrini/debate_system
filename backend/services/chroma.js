@@ -7,13 +7,18 @@ const client = new ChromaClient({
 
 const COLLECTION_NAME = "consumer_protection_act";
 
+const dummyEmbeddingFunction = {
+  generate: async (texts) => texts.map(() => [])
+};
+
 /**
  * Gets or creates the 'consumer_protection_act' collection in ChromaDB.
  */
 export async function getCollection() {
   try {
     const collection = await client.getOrCreateCollection({
-      name: COLLECTION_NAME
+      name: COLLECTION_NAME,
+      embeddingFunction: dummyEmbeddingFunction
     });
     return collection;
   } catch (error) {

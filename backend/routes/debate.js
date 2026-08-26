@@ -18,7 +18,9 @@ router.post("/", async (req, res) => {
     // Assign or reuse threadId
     const activeThreadId = reqThreadId || crypto.randomUUID();
 
-    // Set Server-Sent Event (SSE) headers
+    // Set Server-Sent Event (SSE) and CORS headers
+    res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");

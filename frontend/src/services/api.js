@@ -1,12 +1,12 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api"
+  baseURL: "/api"
 });
 
 /**
  * Streams debate events from backend SSE via POST fetch.
- * Supports threadId for conversation history continuity.
+ * Explicitly reads error JSON payload on non-200 responses to display accurate error messages.
  * 
  * @param {string} question 
  * @param {string|null} threadId 
@@ -15,20 +15,53 @@ const API = axios.create({
  * @param {function} onComplete () => void
  */
 export async function streamDebate(question, threadId, onEvent, onError, onComplete) {
-  try {
-    const response = await fetch("http://localhost:5000/api/debate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ question, threadId })
-    });
+  const endpoints = [
+    "/api/debate",
+    "http://127.0.0.1:5000/api/debate",
+    "http://localhost:5000/api/debate"
+  ];
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Server error (${response.status}): ${errText}`);
+  let response = null;
+  let lastError = null;
+
+  for (const targetUrl of endpoints) {
+    try {
+      response = await fetch(targetUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ question, threadId })
+      });
+
+      // If we got an HTTP response (even 400/500), break and handle status
+      if (response) {
+        break;
+      }
+    } catch (err) {
+      lastError = err;
+      console.warn(`Fetch connection error for ${targetUrl}:`, err.message);
     }
+  }
 
+  if (!response) {
+    if (onError) onError(lastError ? lastError.message : "Unable to reach backend server at http://127.0.0.1:5000.");
+    return;
+  }
+
+  if (!response.ok) {
+    let serverErrText = "";
+    try {
+      const errJson = await response.json();
+      serverErrText = errJson.error || errJson.message || JSON.stringify(errJson);
+    } catch (e) {
+      serverErrText = await response.text();
+    }
+    if (onError) onError(`Server Error (${response.status}): ${serverErrText || "Processing failed"}`);
+    return;
+  }
+
+  try {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
@@ -62,7 +95,7 @@ export async function streamDebate(question, threadId, onEvent, onError, onCompl
         }
 
         if (eventType === "error") {
-          if (onError) onError(eventData.message || "Server streaming error");
+          if (onError) onError(eventData.message || "Server processing error");
         } else if (eventType === "done") {
           if (onComplete) onComplete();
         } else {
@@ -73,6 +106,7 @@ export async function streamDebate(question, threadId, onEvent, onError, onCompl
 
     if (onComplete) onComplete();
   } catch (err) {
+    console.error("streamDebate error:", err);
     if (onError) onError(err.message);
   }
 }

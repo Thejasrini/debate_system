@@ -1,12 +1,13 @@
 import { useState } from "react";
 
-export default function QuestionBox({ onSubmit, loading }) {
+export default function QuestionBox({ onSubmit, loading, isFollowUp = false }) {
   const [question, setQuestion] = useState("");
 
   const handleSubmit = (e) => {
     if (e) e.preventDefault();
     if (!question.trim() || loading) return;
     onSubmit(question);
+    setQuestion(""); // clear input box for continuous chat
   };
 
   // Extract petitioner & respondent preview framing from input text dynamically
@@ -36,20 +37,20 @@ export default function QuestionBox({ onSubmit, loading }) {
         <div className="docket-card" style={{ borderTop: "3px solid var(--accent-brass)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
             <h3 className="font-serif text-brass" style={{ margin: 0, fontSize: "1.15rem", letterSpacing: "0.5px" }}>
-              📋 CASE INTAKE & PLEADINGS FORM
+              {isFollowUp ? "💬 CONTINUOUS CHAT & PROOF SUBMISSION" : "📋 CASE INTAKE & PLEADINGS FORM"}
             </h3>
             <span className="font-mono text-muted" style={{ fontSize: "0.75rem", backgroundColor: "var(--accent-brass-light)", padding: "2px 8px", borderRadius: "4px" }}>
-              FORM CPA-1
+              {isFollowUp ? "FORM CPA-2 (PROOF)" : "FORM CPA-1"}
             </span>
           </div>
 
           <form onSubmit={handleSubmit}>
             <label className="font-mono text-muted" style={{ display: "block", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
-              Statutory Claim / Facts Statement
+              {isFollowUp ? "Submit Proof Documents / Follow-up Details Text" : "Statutory Claim / Facts Statement"}
             </label>
 
             <textarea
-              rows="5"
+              rows="4"
               style={{
                 width: "100%",
                 boxSizing: "border-box",
@@ -63,7 +64,11 @@ export default function QuestionBox({ onSubmit, loading }) {
                 resize: "vertical",
                 lineHeight: "1.5"
               }}
-              placeholder="State the consumer dispute facts (e.g., 'I bought a defective laptop that stopped working within 3 days. The seller refused to replace it or refund my money...')"
+              placeholder={
+                isFollowUp
+                  ? "Type your proof text or follow-up details (e.g., 'Here is my proof: Invoice #74892 dated 10 Jan 2026 for Rs. 45,000, and email complaint sent to support on 12 Jan...')"
+                  : "State the consumer dispute facts (e.g., 'I bought a defective laptop that stopped working within 3 days. The seller refused to replace it or refund my money...')"
+              }
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
             />
@@ -82,9 +87,13 @@ export default function QuestionBox({ onSubmit, loading }) {
                   <>
                     <span className="gavel-icon-animated">🔨</span> Session In Progress...
                   </>
+                ) : isFollowUp ? (
+                  <>
+                    💬 Submit Proof & Update Verdict
+                  </>
                 ) : (
                   <>
-                    ⚖️ File & Begin Session
+                    ⚖️ File & Begin Debate
                   </>
                 )}
               </button>

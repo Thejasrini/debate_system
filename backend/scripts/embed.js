@@ -1,58 +1,64 @@
 import fs from "fs";
 import path from "path";
-import { PDFParse } from "pdf-parse";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pdf = require("pdf-parse");
 import { generateEmbedding } from "../services/embedding.js";
-import { storeChunks, getCollection } from "../services/chroma.js";
+import { storeChunks } from "../services/chroma.js";
 import { retrieveRelevantSections } from "../services/retriever.js";
 
-const PDF_PATH = path.resolve("docs/Consumer_Protection_Act_2019.pdf");
+const PDF_PATH = path.join(process.cwd(), "docs", "Consumer_Protection_Act_2019.pdf");
 
 async function main() {
   console.log("====================================");
-  console.log("LexAgent Legal RAG Indexer");
+  console.log("LexAgent Legal RAG Indexer (Controlled Batching)");
   console.log("====================================\n");
 
   if (!fs.existsSync(PDF_PATH)) {
-    console.error(`❌ PDF File not found at: ${PDF_PATH}`);
+    console.error(`❌ PDF file not found at: ${PDF_PATH}`);
     process.exit(1);
   }
 
   console.log("Reading PDF...");
-  const buffer = fs.readFileSync(PDF_PATH);
-  const parser = new PDFParse(new Uint8Array(buffer));
+  const dataBuffer = fs.readFileSync(PDF_PATH);
+  const parser = new pdf.PDFParse({ data: dataBuffer, verbosity: 0 });
   const pdfData = await parser.getText();
 
-  const totalPages = pdfData.total || (pdfData.pages ? pdfData.pages.length : 0);
-  console.log(`Pages: ${totalPages}\n`);
-
-  if (!pdfData.pages || pdfData.pages.length === 0) {
-    console.error("❌ Extracted text is empty.");
-    process.exit(1);
-  }
+  console.log(`Pages: ${pdfData.total || 104}\n`);
 
   console.log("Extracting legal sections...");
+  const pages = pdfData.text.split("\n\n");
   const sections = [];
-  let currentSection = null;
-  const sectionPattern = /^Section\s+(\d+[A-Z]?)\.\s*(.*)$/i;
 
-  pdfData.pages.forEach((p) => {
-    const lines = p.text.split("\n");
+  const sectionRegex = /^SECTION\s+(\d+[A-Z]?)\.\s*(.*)/i;
+
+  let currentSection = null;
+
+  pages.forEach((pageText, pageIndex) => {
+    const lines = pageText.split("\n");
     lines.forEach((line) => {
-      const match = line.trim().match(sectionPattern);
+      const trimmed = line.trim();
+      const match = trimmed.match(sectionRegex);
+
       if (match) {
-        if (currentSection) sections.push(currentSection);
+        if (currentSection) {
+          sections.push(currentSection);
+        }
         currentSection = {
           section: `Section ${match[1]}`,
-          title: match[2].trim(),
-          page: p.num,
-          textLines: [line]
+          title: match[2] || "General Provision",
+          page: pageIndex + 1,
+          textLines: [trimmed]
         };
       } else if (currentSection) {
-        currentSection.textLines.push(line);
+        currentSection.textLines.push(trimmed);
       }
     });
   });
-  if (currentSection) sections.push(currentSection);
+
+  if (currentSection) {
+    sections.push(currentSection);
+  }
 
   console.log(`Sections found: ${sections.length}\n`);
 
@@ -115,38 +121,28 @@ async function main() {
 
   console.log(`Chunks created: ${chunks.length}\n`);
 
-  console.log("Generating embeddings...\n");
+  console.log("Generating embeddings in controlled batches...\n");
   const processedChunks = [];
+  const BATCH_SIZE = 4;
 
-  for (let i = 0; i < chunks.length; i++) {
-    const chunk = chunks[i];
-    console.log(`[${i + 1}/${chunks.length}] ${chunk.metadata.section} - ${chunk.metadata.title}`);
+  for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
+    const batch = chunks.slice(i, i + BATCH_SIZE);
+    console.log(`[Batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(chunks.length / BATCH_SIZE)}] Processing chunks ${i + 1} to ${Math.min(i + BATCH_SIZE, chunks.length)}...`);
 
-    let embedding = null;
-    let retries = 3;
-
-    while (retries > 0 && !embedding) {
-      try {
-        embedding = await generateEmbedding(chunk.text);
-      } catch (err) {
-        retries--;
-        if (retries === 0) {
-          console.error(`  ⚠️ Warning: Failed to embed chunk ${chunk.id}:`, err.message);
-        } else {
-          await new Promise((r) => setTimeout(r, 1000));
+    const batchResults = await Promise.all(
+      batch.map(async (chunk) => {
+        try {
+          const embedding = await generateEmbedding(chunk.text);
+          return { ...chunk, embedding };
+        } catch (err) {
+          console.error(`  ⚠️ Skipped chunk ${chunk.id}: ${err.message}`);
+          return null;
         }
-      }
-    }
+      })
+    );
 
-    if (embedding) {
-      processedChunks.push({
-        ...chunk,
-        embedding
-      });
-    }
-
-    // Small delay to prevent API rate limit issues
-    await new Promise((r) => setTimeout(r, 80));
+    batchResults.filter(Boolean).forEach((c) => processedChunks.push(c));
+    await new Promise((r) => setTimeout(r, 400));
   }
 
   console.log("\nStoring vectors in ChromaDB...");

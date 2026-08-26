@@ -6,7 +6,6 @@ import JudgeCard from "../components/JudgeCard";
 import { streamDebate } from "../services/api";
 
 export default function Home() {
-  // Theme Preference State (dark | light)
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem("lexagent-theme");
     if (saved) return saved;
@@ -25,6 +24,8 @@ export default function Home() {
   const [outOfScope, setOutOfScope] = useState(false);
   const [outOfScopeMessage, setOutOfScopeMessage] = useState("");
   
+  const [caseReasoning, setCaseReasoning] = useState(null);
+  const [retrieval, setRetrieval] = useState(null);
   const [support, setSupport] = useState(null);
   const [oppose, setOppose] = useState(null);
   const [judge, setJudge] = useState(null);
@@ -35,7 +36,6 @@ export default function Home() {
 
   const [error, setError] = useState(null);
 
-  // Apply Theme Preference to DOM root attribute
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("lexagent-theme", theme);
@@ -45,7 +45,6 @@ export default function Home() {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
-  // Live Monospace Clock Effect
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -62,7 +61,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Update Case Number when threadId is assigned
   useEffect(() => {
     if (threadId) {
       const shortId = threadId.slice(0, 4).toUpperCase();
@@ -78,6 +76,8 @@ export default function Home() {
     setCategory(null);
     setOutOfScope(false);
     setOutOfScopeMessage("");
+    setCaseReasoning(null);
+    setRetrieval(null);
     setSupport(null);
     setOppose(null);
     setJudge(null);
@@ -89,13 +89,14 @@ export default function Home() {
   };
 
   const handleStartStream = (question) => {
-    // Archive previous turn if completed
     if (judge && currentQuestion) {
       setPastTurns((prev) => [
         ...prev,
         {
           question: currentQuestion,
           category,
+          caseReasoning,
+          retrieval,
           support,
           oppose,
           judge
@@ -108,6 +109,8 @@ export default function Home() {
     setCategory(null);
     setOutOfScope(false);
     setOutOfScopeMessage("");
+    setCaseReasoning(null);
+    setRetrieval(null);
     setSupport(null);
     setOppose(null);
     setJudge(null);
@@ -133,6 +136,10 @@ export default function Home() {
           setOpposeLoading(false);
           setJudgeLoading(false);
           setIsAnalyzing(false);
+        } else if (eventType === "caseReasoning") {
+          setCaseReasoning(data);
+        } else if (eventType === "retrieval") {
+          setRetrieval(data);
         } else if (eventType === "support") {
           setSupport(data);
           setSupportLoading(false);
@@ -158,7 +165,6 @@ export default function Home() {
     );
   };
 
-  // Determine current live status pill
   const getStatusPill = () => {
     if (outOfScope) {
       return (
@@ -191,11 +197,11 @@ export default function Home() {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-navy)" }}>
       
-      {/* 1. Top Header Bar */}
+      {/* Top Header Bar */}
       <header className="docket-topbar">
         <div className="docket-title-group">
           <h1 className="font-serif text-brass" style={{ fontSize: "1.25rem", margin: 0, letterSpacing: "0.5px" }}>
-            ⚖️ LEXAGENT COURTROOM
+            ⚖️ LEXAGENT COURTROOM TERMINAL
           </h1>
           <span className="docket-number">{caseNumber}</span>
           {getStatusPill()}
@@ -206,7 +212,6 @@ export default function Home() {
             {currentTime}
           </span>
 
-          {/* Theme Preference Toggle */}
           <button className="btn-theme-toggle" onClick={toggleTheme} title="Switch UI Theme Preference">
             {theme === "dark" ? "☀️ Light Theme" : "🌙 Dark Theme"}
           </button>
@@ -222,29 +227,55 @@ export default function Home() {
       {/* Main Container */}
       <main style={{ maxWidth: "1280px", margin: "0 auto", padding: "28px 24px 160px 24px" }}>
         
-        {/* Subtitle / Context Header */}
+        {/* Context Header */}
         <div style={{ marginBottom: "28px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "12px" }}>
           <div>
             <h2 className="font-serif text-parchment" style={{ fontSize: "1.5rem", fontWeight: "600" }}>
-              District Consumer Disputes Courtroom Terminal
+              Indian Consumer Protection Legal Intelligence System
             </h2>
             <p className="text-muted font-sans" style={{ fontSize: "0.9rem", marginTop: "4px" }}>
-              Adversarial AI Courtroom Simulator strictly grounded in the <strong className="text-brass">Consumer Protection Act, 2019</strong>.
+              Continuous Adversarial Legal Debate System strictly governed by the <strong className="text-brass">Consumer Protection Act, 2019</strong>.
             </p>
           </div>
 
           <div className="font-mono text-muted" style={{ fontSize: "0.8rem", textAlign: "right" }}>
-            Corpus: <span className="text-brass">Consumer_Protection_Act_2019.pdf</span>
+            Corpus: <span className="text-brass">CPA 2019 + Statutory Rules + Supreme Court & NCDRC Precedents</span>
           </div>
         </div>
 
-        {/* 2. Split Case Intake Hero Panel */}
-        <QuestionBox onSubmit={handleStartStream} loading={isAnalyzing} />
+        {/* PAST CONVERSATION TURNS (CONTINUOUS CHAT HISTORY) */}
+        {pastTurns.length > 0 && (
+          <div style={{ marginBottom: "35px", display: "flex", flexDirection: "column", gap: "30px" }}>
+            <div className="font-mono text-brass" style={{ fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1.5px" }}>
+              📜 PREVIOUS COURT SESSION TURNS ({pastTurns.length})
+            </div>
+            {pastTurns.map((turn, turnIdx) => (
+              <div key={turnIdx} style={{ padding: "20px", backgroundColor: "rgba(15, 23, 42, 0.6)", borderRadius: "8px", border: "1px solid var(--border-hairline)" }}>
+                <div style={{ marginBottom: "12px" }}>
+                  <span className="font-mono text-brass" style={{ fontSize: "0.8rem", backgroundColor: "rgba(201, 169, 97, 0.15)", padding: "3px 8px", borderRadius: "4px" }}>
+                    Turn #{turnIdx + 1} Question
+                  </span>
+                  <p style={{ margin: "6px 0 0 0", color: "var(--text-parchment)", fontSize: "1rem", fontWeight: "600" }}>
+                    "{turn.question}"
+                  </p>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "16px" }}>
+                  <SupportCard data={turn.support} />
+                  <OpposeCard data={turn.oppose} />
+                </div>
+                <JudgeCard data={turn.judge} />
+              </div>
+            ))}
+            <hr className="hairline-divider" />
+          </div>
+        )}
 
-        {/* Hairline Divider */}
+        {/* Question & Continuous Proof Submission Box */}
+        <QuestionBox onSubmit={handleStartStream} loading={isAnalyzing} isFollowUp={Boolean(threadId || judge)} />
+
         <hr className="hairline-divider" />
 
-        {/* Error Notification */}
+        {/* Error Banner */}
         {error && (
           <div style={{ padding: "16px", backgroundColor: "var(--courtroom-red-bg)", border: "1px solid var(--courtroom-red)", color: "var(--courtroom-red-bright)", borderRadius: "6px", marginBottom: "24px" }}>
             ⚠️ <strong>Filing Error:</strong> {error}
@@ -263,48 +294,11 @@ export default function Home() {
             <p style={{ fontSize: "1rem", color: "var(--text-parchment)", margin: 0 }}>
               {outOfScopeMessage}
             </p>
-            {category && (
-              <div className="font-mono text-muted" style={{ marginTop: "12px", fontSize: "0.85rem" }}>
-                Classified Non-Consumer Category: <strong className="text-brass">{category}</strong>
-              </div>
-            )}
           </div>
         )}
 
-        {/* 3. Past Turns Accordion (Case History Drawer) */}
-        {pastTurns.length > 0 && (
-          <div style={{ marginBottom: "32px" }}>
-            <div className="font-mono text-brass" style={{ fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>
-              📜 Case History Log ({pastTurns.length} Previous {pastTurns.length === 1 ? "Pleading" : "Pleadings"})
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {pastTurns.map((turn, idx) => (
-                <details
-                  key={idx}
-                  className="docket-card"
-                  style={{ cursor: "pointer" }}
-                >
-                  <summary className="font-serif text-brass" style={{ fontSize: "1.05rem", fontWeight: "600" }}>
-                    Turn #{idx + 1}: "{turn.question}"
-                  </summary>
-                  <div style={{ marginTop: "14px", paddingTop: "12px", borderTop: "1px solid var(--border-hairline)", fontSize: "0.9rem" }}>
-                    <div style={{ display: "flex", gap: "24px", flexWrap: "wrap", marginBottom: "10px" }}>
-                      <span className="font-mono text-muted">Category: <strong className="text-parchment">{turn.category || "Defective Product"}</strong></span>
-                      <span className="font-mono text-muted">Verdict: <strong style={{ color: turn.judge?.winningSide === "Support" ? "var(--courtroom-green-bright)" : "var(--courtroom-red-bright)" }}>{turn.judge?.winningSide} Favored</strong></span>
-                      <span className="font-mono text-muted">Confidence: <strong className="text-brass">{turn.judge?.confidence}%</strong></span>
-                    </div>
-                    <p style={{ color: "var(--text-parchment)", fontStyle: "italic", margin: 0 }}>
-                      "{turn.judge?.decision}"
-                    </p>
-                  </div>
-                </details>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 4. Active Debate Courtroom View */}
-        {!outOfScope && (isAnalyzing || support || oppose || judge) && (
+        {/* Active Debate View */}
+        {!outOfScope && (isAnalyzing || support || oppose || judge || caseReasoning) && (
           <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
             
             {/* Category Tag */}
@@ -316,62 +310,104 @@ export default function Home() {
               </div>
             )}
 
-            {/* Facing Agent Panels (Petitioner vs Respondent) */}
+            {/* Case Understanding Card */}
+            {caseReasoning && (
+              <div className="docket-card" style={{ borderLeft: "4px solid var(--accent-brass)" }}>
+                <h3 className="font-serif text-brass" style={{ margin: "0 0 12px 0", fontSize: "1.15rem" }}>
+                  🧩 Case Understanding & Factual Representation (Module 1)
+                </h3>
+                <p style={{ color: "var(--text-parchment)", fontSize: "0.95rem", marginBottom: "14px", fontStyle: "italic" }}>
+                  "{caseReasoning.case_summary}"
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", fontSize: "0.88rem" }}>
+                  <div>
+                    <strong className="text-brass">Established Facts:</strong>
+                    <ul style={{ margin: "6px 0 0 18px", padding: 0, color: "var(--text-parchment)" }}>
+                      {caseReasoning.facts?.map((f, i) => <li key={i}>{f}</li>)}
+                    </ul>
+                  </div>
+                  <div>
+                    <strong className="text-brass">Legal Issues Identified:</strong>
+                    <ul style={{ margin: "6px 0 0 18px", padding: 0, color: "var(--text-parchment)" }}>
+                      {caseReasoning.legal_issues?.map((iss, i) => <li key={i}>{iss}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Hybrid Retrieval Card */}
+            {retrieval && (
+              <div className="docket-card" style={{ borderLeft: "4px solid #3b82f6" }}>
+                <h3 className="font-serif" style={{ color: "#60a5fa", margin: "0 0 12px 0", fontSize: "1.15rem" }}>
+                  📖 Hybrid Legal Knowledge Retrieval (Module 2)
+                </h3>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px", fontSize: "0.85rem" }}>
+                  <div>
+                    <strong style={{ color: "#93c5fd" }}>Statutory Sections ({retrieval.statutory_sections?.length}):</strong>
+                    <ul style={{ margin: "6px 0 0 16px", padding: 0, color: "var(--text-parchment)" }}>
+                      {retrieval.statutory_sections?.map((s, i) => <li key={i}><strong>{s.section}</strong>: {s.title}</li>)}
+                    </ul>
+                  </div>
+                  <div>
+                    <strong style={{ color: "#93c5fd" }}>Official Rules ({retrieval.official_rules?.length}):</strong>
+                    <ul style={{ margin: "6px 0 0 16px", padding: 0, color: "var(--text-parchment)" }}>
+                      {retrieval.official_rules?.map((r, i) => <li key={i}><strong>{r.rule}</strong> ({r.document_name})</li>)}
+                    </ul>
+                  </div>
+                  <div>
+                    <strong style={{ color: "#93c5fd" }}>Verified Precedents ({retrieval.verified_precedents?.length}):</strong>
+                    <ul style={{ margin: "6px 0 0 16px", padding: 0, color: "var(--text-parchment)" }}>
+                      {retrieval.verified_precedents?.map((p, i) => <li key={i}><em>{p.case_name}</em> ({p.citation})</li>)}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Dual Counsel Arguments */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
-              
-              {/* Petitioner Column (Support) */}
               <div>
                 {supportLoading ? (
                   <div className="docket-card petitioner-panel">
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <span className="gavel-icon-animated">🟢</span>
                       <h3 className="font-serif" style={{ color: "var(--courtroom-green-bright)", margin: 0 }}>
-                        Petitioner Counsel Filing Arguments...
+                        Petitioner Counsel Filing Numbered Debate Points...
                       </h3>
                     </div>
-                    <p className="font-mono text-muted" style={{ fontSize: "0.85rem", marginTop: "10px" }}>
-                      Searching ChromaDB legal context & evaluating consumer rights under CPA 2019...
-                    </p>
                   </div>
                 ) : (
                   <SupportCard data={support} />
                 )}
               </div>
 
-              {/* Respondent Column (Oppose) */}
               <div>
                 {opposeLoading ? (
                   <div className="docket-card respondent-panel">
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <span className="gavel-icon-animated">🔴</span>
                       <h3 className="font-serif" style={{ color: "var(--courtroom-red-bright)", margin: 0 }}>
-                        Respondent Counsel Preparing Defenses...
+                        Respondent Counsel Preparing Numbered Counter-Points...
                       </h3>
                     </div>
-                    <p className="font-mono text-muted" style={{ fontSize: "0.85rem", marginTop: "10px" }}>
-                      Formulating statutory objections & checking proof requirements under Section 39...
-                    </p>
                   </div>
                 ) : (
                   <OpposeCard data={oppose} />
                 )}
               </div>
-
             </div>
 
-            {/* Bench Column (Judge AI Verdict) */}
+            {/* Bench Verdict & Required Proof Checklist */}
             <div>
               {judgeLoading ? (
                 <div className="docket-card bench-panel">
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <span className="gavel-icon-animated">🔨</span>
                     <h3 className="font-serif text-brass" style={{ margin: 0 }}>
-                      The Bench Presiding & Evaluating Pleadings...
+                      The Judicial Bench Adjudicating Debate Points & Proof Checklist...
                     </h3>
                   </div>
-                  <p className="font-mono text-muted" style={{ fontSize: "0.85rem", marginTop: "10px" }}>
-                    Weighing Petitioner arguments against Respondent defenses for final statutory verdict...
-                  </p>
                 </div>
               ) : (
                 <JudgeCard data={judge} />

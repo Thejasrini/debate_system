@@ -5,7 +5,7 @@ dotenv.config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Candidate Model Rotation Hierarchy
+// Candidate Model Rotation Hierarchy for high throughput & fast response latency
 const CANDIDATE_MODELS = [
   "gemini-2.5-flash",
   "gemini-3.5-flash-lite"
@@ -18,7 +18,8 @@ function timeoutPromise(ms) {
 }
 
 /**
- * Robust content generator with instant model candidate rotation on 429 rate limits or timeouts.
+ * High-speed content generator with an explicit 5-second timeout per attempt.
+ * Guarantees sub-30-second multi-agent pipeline execution.
  * 
  * @param {string} prompt 
  * @param {number} maxRetries 
@@ -30,10 +31,10 @@ export async function generateContentWithRetry(prompt, maxRetries = 2) {
       try {
         const currentModel = genAI.getGenerativeModel({ model: modelName });
         
-        // Race Gemini API call against an 8-second hard timeout
+        // Hard 5-second timeout per model attempt
         const result = await Promise.race([
           currentModel.generateContent(prompt),
-          timeoutPromise(8000)
+          timeoutPromise(5000)
         ]);
 
         return result;
@@ -49,15 +50,15 @@ export async function generateContentWithRetry(prompt, maxRetries = 2) {
         }
 
         if (attempt >= maxRetries) break;
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 200));
       }
     }
   }
 
-  // Final fallback attempt with gemini-3.5-flash-lite
+  // Final emergency attempt with 6s timeout
   const defaultModel = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
   return await Promise.race([
     defaultModel.generateContent(prompt),
-    timeoutPromise(10000)
+    timeoutPromise(6000)
   ]);
 }

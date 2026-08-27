@@ -1,339 +1,175 @@
+/* LexAgent Legal Design System — Module G Token System */
+
 :root {
-  --bg-navy: #0B1120;
-  --surface-navy: #12192B;
-  --surface-card: #192238;
-  --surface-card-hover: #1F2B47;
-  --accent-brass: #C9A961;
-  --accent-brass-hover: #B8974E;
-  --accent-brass-light: rgba(201, 169, 97, 0.12);
-  --text-parchment: #E8E4D9;
-  --text-muted: #94A3B8;
-  --text-dim: #64748B;
-  --courtroom-red: #8B2E2E;
-  --courtroom-red-bright: #B83A3A;
-  --courtroom-red-bg: rgba(139, 46, 46, 0.18);
-  --courtroom-green: #2E5C4E;
-  --courtroom-green-bright: #3D7A68;
-  --courtroom-green-bg: rgba(46, 92, 78, 0.18);
-  --border-hairline: rgba(201, 169, 97, 0.22);
-  --border-hairline-bright: rgba(201, 169, 97, 0.45);
+  /* Color Palette — Dark Mode (Default) */
+  --bg: #0B1420;
+  --surface: #121D2C;
+  --surface-hover: #1A2840;
+  --ink: #F3F1EA;
+  --ink-muted: #94A3B8;
+  --ink-dim: #64748B;
+  --navy: #1B2E47;
+  --brass: #C9A45E;
+  --brass-hover: #B89448;
+  --brass-light: rgba(201, 164, 94, 0.12);
+  --support-green: #4E9078;
+  --support-green-bright: #5DA888;
+  --support-bg: rgba(78, 144, 120, 0.15);
+  --oppose-oxblood: #B25A50;
+  --oppose-oxblood-bright: #C96B60;
+  --oppose-bg: rgba(178, 90, 80, 0.15);
+  --line: #233247;
+  --line-bright: rgba(201, 164, 94, 0.45);
 
-  --font-serif: 'Fraunces', Georgia, serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Legacy Backward Compatibility Aliases */
+  --bg-navy: var(--bg);
+  --surface-navy: var(--surface);
+  --surface-card: var(--surface);
+  --surface-card-hover: var(--surface-hover);
+  --accent-brass: var(--brass);
+  --accent-brass-hover: var(--brass-hover);
+  --accent-brass-light: var(--brass-light);
+  --text-parchment: var(--ink);
+  --text-muted: var(--ink-muted);
+  --text-dim: var(--ink-dim);
+  --courtroom-red: var(--oppose-oxblood);
+  --courtroom-red-bright: var(--oppose-oxblood-bright);
+  --courtroom-red-bg: var(--oppose-bg);
+  --courtroom-green: var(--support-green);
+  --courtroom-green-bright: var(--support-green-bright);
+  --courtroom-green-bg: var(--support-bg);
+  --border-hairline: var(--line);
+  --border-hairline-bright: var(--line-bright);
+
+  /* Typography Tokens */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+
+  --text-hero: 3.5rem;       /* 56px */
+  --text-h1: 2.5rem;         /* 40px */
+  --text-h2: 2rem;           /* 32px */
+  --text-h3: 1.5rem;         /* 24px */
+  --text-body: 1.0625rem;    /* 17px */
+  --text-small: 0.875rem;    /* 14px */
+  --text-xs: 0.75rem;        /* 12px */
+
+  --leading-tight: 1.3;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.8;
+
+  /* Spacing Scale */
+  --space-xs: 0.25rem;    /* 4px */
+  --space-sm: 0.5rem;     /* 8px */
+  --space-md: 1rem;       /* 16px */
+  --space-lg: 1.5rem;     /* 24px */
+  --space-xl: 2rem;       /* 32px */
+  --space-2xl: 3rem;      /* 48px */
+  --space-3xl: 4rem;      /* 64px */
+  --space-4xl: 6rem;      /* 96px */
+
+  /* Border Radii */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Layout Widths */
+  --max-width: 1200px;
+  --content-width: 800px;
 }
 
-/* Light Theme Variables */
+/* Light Mode Overrides */
 [data-theme="light"] {
-  --bg-navy: #F5F3EC;
-  --surface-navy: #FFFFFF;
-  --surface-card: #FAF8F2;
-  --surface-card-hover: #F0ECE1;
-  --accent-brass: #8E6D25;
-  --accent-brass-hover: #75591D;
-  --accent-brass-light: rgba(142, 109, 37, 0.12);
-  --text-parchment: #0F172A;
-  --text-muted: #475569;
-  --text-dim: #64748B;
-  --courtroom-red: #991B1B;
-  --courtroom-red-bright: #DC2626;
-  --courtroom-red-bg: rgba(153, 27, 27, 0.08);
-  --courtroom-green: #166534;
-  --courtroom-green-bright: #16A34A;
-  --courtroom-green-bg: rgba(22, 101, 52, 0.08);
-  --border-hairline: rgba(142, 109, 37, 0.28);
-  --border-hairline-bright: rgba(142, 109, 37, 0.55);
+  --bg: #FAF9F6;
+  --surface: #FFFFFF;
+  --surface-hover: #F0ECE1;
+  --ink: #14171C;
+  --ink-muted: #475569;
+  --ink-dim: #64748B;
+  --navy: #10233F;
+  --brass: #A9803D;
+  --brass-hover: #917030;
+  --brass-light: rgba(169, 128, 61, 0.12);
+  --support-green: #2C5F4E;
+  --support-green-bright: #3D7A68;
+  --support-bg: rgba(44, 95, 78, 0.08);
+  --oppose-oxblood: #7A342E;
+  --oppose-oxblood-bright: #9A453D;
+  --oppose-bg: rgba(122, 52, 46, 0.08);
+  --line: #E4E1D8;
+  --line-bright: rgba(169, 128, 61, 0.55);
+
+  --bg-navy: var(--bg);
+  --surface-navy: var(--surface);
+  --surface-card: var(--surface);
+  --accent-brass: var(--brass);
+  --text-parchment: var(--ink);
+  --text-muted: var(--ink-muted);
+  --courtroom-red: var(--oppose-oxblood);
+  --courtroom-green: var(--support-green);
+  --border-hairline: var(--line);
 }
 
-/* Reset & Global Rules */
-*, *::before, *::after {
-  box-sizing: border-box;
+/* Base Body & Reset */
+body {
   margin: 0;
-  padding: 0;
-}
-
-html, body {
-  background-color: var(--bg-navy);
-  color: var(--text-parchment);
-  font-family: var(--font-sans);
-  font-size: 15px;
-  line-height: 1.6;
-  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-navy);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(201, 169, 97, 0.4);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-brass);
+/* Base Typography */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  color: var(--ink);
 }
 
-/* Typography Utility Classes */
-.font-serif {
-  font-family: var(--font-serif);
-}
+h1 { font-size: var(--text-h1); }
+h2 { font-size: var(--text-h2); }
+h3 { font-size: var(--text-h3); }
 
-.font-mono {
+code, pre, .font-mono {
   font-family: var(--font-mono);
+  font-size: var(--text-small);
 }
 
-.text-brass {
-  color: var(--accent-brass);
+/* Layout Utilities */
+.container-custom {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-xl);
 }
 
-.text-parchment {
-  color: var(--text-parchment);
+.content-custom {
+  max-width: var(--content-width);
+  margin: 0 auto;
 }
 
-.text-muted {
-  color: var(--text-muted);
-}
-
-/* Focus States for Accessibility */
-button:focus-visible,
-textarea:focus-visible,
-input:focus-visible,
-select:focus-visible {
-  outline: 2px solid var(--accent-brass);
+/* Accessibility Focus States */
+:focus-visible {
+  outline: 2px solid var(--brass);
   outline-offset: 2px;
 }
 
-/* Hairline Brass Section Dividers */
-.hairline-divider {
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--border-hairline-bright) 20%,
-    var(--border-hairline-bright) 80%,
-    transparent 100%
-  );
-  margin: 24px 0;
-  border: none;
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
 }
 
-/* Top Header Bar */
-.docket-topbar {
-  background-color: var(--surface-navy);
-  border-bottom: 1px solid var(--border-hairline);
-  padding: 12px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  transition: background-color 0.25s ease, border-color 0.25s ease;
-}
-
-.docket-title-group {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.docket-number {
-  color: var(--accent-brass);
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  padding: 3px 8px;
-  background-color: var(--accent-brass-light);
-  border: 1px solid var(--border-hairline);
-  border-radius: 4px;
-}
-
-.docket-status-pill {
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.docket-status-pill.draft {
-  background-color: rgba(148, 163, 184, 0.15);
-  color: var(--text-muted);
-  border: 1px solid rgba(148, 163, 184, 0.3);
-}
-
-.docket-status-pill.in-session {
-  background-color: rgba(201, 169, 97, 0.2);
-  color: var(--accent-brass);
-  border: 1px solid var(--accent-brass);
-}
-
-.docket-status-pill.verdict {
-  background-color: var(--courtroom-green-bg);
-  color: #16A34A;
-  border: 1px solid var(--courtroom-green-bright);
-}
-
-.docket-status-pill.out-of-scope {
-  background-color: var(--courtroom-red-bg);
-  color: #DC2626;
-  border: 1px solid var(--courtroom-red);
-}
-
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: currentColor;
-}
-
-/* Courtroom Button Styling */
-.btn-brass {
-  background-color: var(--accent-brass);
-  color: var(--bg-navy);
-  font-family: var(--font-serif);
-  font-size: 1rem;
-  font-weight: 700;
-  padding: 12px 26px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  letter-spacing: 0.3px;
-}
-
-[data-theme="light"] .btn-brass {
-  color: #FFFFFF;
-}
-
-.btn-brass:hover:not(:disabled) {
-  background-color: var(--accent-brass-hover);
-}
-
-.btn-brass:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-.btn-brass:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.btn-outline-brass {
-  background-color: transparent;
-  color: var(--accent-brass);
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 8px 16px;
-  border: 1px solid var(--accent-brass);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-outline-brass:hover {
-  background-color: var(--accent-brass-light);
-}
-
-/* Theme Switcher Button */
-.btn-theme-toggle {
-  background-color: var(--surface-card);
-  color: var(--text-parchment);
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 6px 14px;
-  border: 1px solid var(--border-hairline);
-  border-radius: 20px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.btn-theme-toggle:hover {
-  border-color: var(--accent-brass);
-  color: var(--accent-brass);
-}
-
-/* Card Surfaces */
-.docket-card {
-  background-color: var(--surface-navy);
-  border: 1px solid var(--border-hairline);
-  border-radius: 6px;
-  padding: 20px;
-  position: relative;
-  transition: background-color 0.25s ease, border-color 0.25s ease;
-}
-
-/* Facing Agent Cards */
-.petitioner-panel {
-  border-left: 4px solid var(--courtroom-green);
-}
-
-.respondent-panel {
-  border-left: 4px solid var(--courtroom-red);
-}
-
-.bench-panel {
-  border: 1px solid var(--border-hairline-bright);
-  background-color: var(--surface-card);
-}
-
-/* Signature Element: Gavel Strike & Stamped Verdict Badge */
-@keyframes gavelImpact {
-  0% { transform: rotate(-25deg) translateY(-10px); }
-  60% { transform: rotate(5deg) translateY(2px); }
-  80% { transform: rotate(-2deg) translateY(-1px); }
-  100% { transform: rotate(0deg) translateY(0); }
-}
-
-@keyframes stampRubber {
-  0% { opacity: 0; transform: scale(1.6) rotate(-12deg); }
-  60% { opacity: 1; transform: scale(0.95) rotate(-3deg); }
-  100% { transform: scale(1) rotate(-4deg); }
-}
-
-.gavel-icon-animated {
-  display: inline-block;
-  animation: gavelImpact 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-.verdict-stamp-badge {
-  display: inline-block;
-  border: 3px double var(--accent-brass);
-  color: var(--accent-brass);
-  background-color: var(--surface-navy);
-  font-family: var(--font-serif);
-  font-size: 1.3rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  padding: 6px 18px;
-  border-radius: 4px;
-  transform: rotate(-4deg);
-  box-shadow: 0 0 15px rgba(201, 169, 97, 0.25);
-  animation: stampRubber 0.5s ease-out forwards;
-}
-
-/* Reduced Motion Preferences */
+/* Reduced Motion Override */
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

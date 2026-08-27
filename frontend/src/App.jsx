@@ -13,6 +13,7 @@ import Verdict from "./pages/Verdict";
 import Dashboard from "./pages/Dashboard";
 import HowItWorks from "./pages/HowItWorks";
 import Profile from "./pages/Profile";
+import AdminAnalytics from "./pages/AdminAnalytics";
 import StyleGuide from "./pages/StyleGuide";
 
 function App() {
@@ -64,6 +65,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute adminOnly>
+                  <AdminAnalytics />
                 </ProtectedRoute>
               }
             />

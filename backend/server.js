@@ -6,6 +6,7 @@ import authRoute from "./routes/auth.js";
 import historyRoute from "./routes/history.js";
 import feedbackRoute from "./routes/feedback.js";
 import exportRoute from "./routes/export.js";
+import adminRoute from "./routes/admin.js";
 import { connectDB } from "./config/db.js";
 
 dotenv.config();
@@ -29,11 +30,12 @@ app.get("/", (req, res) => {
   res.send("LexAgent Backend Running 🚀");
 });
 
-// Mount Authentication, History, Feedback, Export & Debate Routes
+// Mount Authentication, History, Feedback, Export, Admin & Debate Routes
 app.use("/api/auth", authRoute);
 app.use("/api/history", historyRoute);
 app.use("/api/feedback", feedbackRoute);
 app.use("/api/export", exportRoute);
+app.use("/api/admin", adminRoute);
 app.use("/api/debate", debateRoute);
 
 const PORT = process.env.PORT || 5000;

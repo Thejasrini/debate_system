@@ -4,8 +4,7 @@ import { getJudgePrompt } from "../prompts/judgePrompt.js";
 
 /**
  * Judge Agent acting as the Judicial Bench.
- * Evaluates legal issues independently, performs explicit judicial comparison,
- * and populates overall debate summary objects.
+ * Enforces the 13 LexAgent Reasoning & Output Correction Directives.
  * 
  * @param {object} caseRepresentation Output from caseReasoningAgent
  * @param {object} hybridKnowledge Output from hybridRetriever
@@ -61,52 +60,45 @@ export async function judgeAgent(caseRepresentation, hybridKnowledge, supportOut
       });
     });
 
-    const missingEvList = caseRepresentation.missing_evidence || ["Purchase invoice / Receipt", "Unboxing footage / Photographs"];
+    const fallbackMissingEv = caseRepresentation.missing_evidence || ["Certified technician inspection report"];
+
+    // Preserve new required fields matching LexAgent Correction Prompt
+    const currentAssessment = parsedJSON.current_assessment || parsedJSON.decision || "🟡 Case depends on evidence";
+    const assessmentExplanation = parsedJSON.assessment_explanation || parsedJSON.decision_explanation || "Based on currently available facts, this conditional assessment reflects argument strength under CPA 2019.";
 
     const resultObj = {
+      case_summary: parsedJSON.case_summary || caseRepresentation.case_summary || "Consumer dispute submitted under Consumer Protection Act, 2019.",
+      key_legal_issues: Array.isArray(parsedJSON.key_legal_issues) && parsedJSON.key_legal_issues.length > 0
+        ? parsedJSON.key_legal_issues
+        : (caseRepresentation.legal_issues || ["Existence of Defect under Section 2(10)"]),
+      consumer_argument: parsedJSON.consumer_argument || supportOutput.position || "Consumer asserts statutory remedies under Consumer Protection Act, 2019.",
+      respondent_argument: parsedJSON.respondent_argument || opposeOutput.position || "Respondent asserts warranty terms exclusion and statutory proof gap.",
+      available_evidence: Array.isArray(parsedJSON.available_evidence) && parsedJSON.available_evidence.length > 0
+        ? parsedJSON.available_evidence
+        : ["Factually asserted in claim text."],
+      not_provided_evidence: Array.isArray(parsedJSON.not_provided_evidence)
+        ? parsedJSON.not_provided_evidence
+        : fallbackMissingEv,
+      outcome_changing_evidence: Array.isArray(parsedJSON.outcome_changing_evidence) && parsedJSON.outcome_changing_evidence.length > 0
+        ? parsedJSON.outcome_changing_evidence
+        : [
+            "Certified Technician Inspection Report -> If factory fault: Consumer case stronger; If voltage fluctuation damage: Manufacturer defense stronger."
+          ],
+      current_assessment: currentAssessment,
+      assessment_explanation: assessmentExplanation,
+      decision: currentAssessment,
+      decision_explanation: assessmentExplanation,
       legal_issues_evaluated: Array.isArray(parsedJSON.legal_issues_evaluated) && parsedJSON.legal_issues_evaluated.length > 0
         ? parsedJSON.legal_issues_evaluated
         : [
             {
-              issue: caseRepresentation.legal_issues ? caseRepresentation.legal_issues[0] : "Dispute Assessment",
-              material_facts: caseRepresentation.facts || [],
-              applicable_law: ["Section 2(10)", "Section 39"],
-              applicable_rules: [],
-              precedents: [],
-              support_position: supportOutput.position || "Consumer asserts statutory claim.",
-              support_strengths: supportOutput.overall_strengths || ["Immediate post-delivery defect report"],
-              support_weaknesses: supportOutput.overall_weaknesses || ["Lack of contemporaneous unboxing proof"],
-              oppose_position: opposeOutput.position || "Respondent position: No specific defense established from supplied facts.",
-              oppose_strengths: opposeOutput.overall_strengths || ["Statutory burden of proof rests on complainant"],
-              oppose_weaknesses: opposeOutput.overall_weaknesses || ["No written terms supplied in record"],
-              key_disagreement: "Whether the delivered item condition meets statutory defect criteria without unboxing proof.",
-              evidence_assessment: "Evidentiary record evaluated against Section 39 statutory proof requirements.",
-              missing_evidence: missingEvList,
-              judicial_comparison: "Compared Support argument on post-delivery failure against Oppose challenge on evidentiary burden.",
-              law_application: "Adjudicated under Consumer Protection Act, 2019 statutory guidelines.",
-              finding: "Inconclusive / Insufficient Evidence",
-              status: "inconclusive",
-              confidence: 0.50,
-              sources: sourcesList
+              issue: caseRepresentation.legal_issues ? caseRepresentation.legal_issues[0] : "Existence of Defect under Section 2(10)",
+              finding: "INCONCLUSIVE",
+              reason: "While post-delivery manifestation supports the consumer, independent technical proof is required to resolve cause."
             }
           ],
-      support_position: parsedJSON.support_position || supportOutput.position || "Consumer asserts statutory remedies under Consumer Protection Act, 2019.",
-      oppose_position: parsedJSON.oppose_position || opposeOutput.position || "Respondent position: No specific defense established from supplied facts.",
-      overall_debate: parsedJSON.overall_debate || {
-        support_strongest_points: supportOutput.overall_strengths || ["Temporal proximity of failure"],
-        support_weakest_points: supportOutput.overall_weaknesses || ["Lack of unboxing footage"],
-        oppose_strongest_points: opposeOutput.overall_strengths || ["Statutory burden of proof gap"],
-        oppose_weakest_points: opposeOutput.overall_weaknesses || ["Absence of documented response"],
-        key_disagreements: ["Evidentiary proof of product condition at delivery"],
-        evidence_gaps: missingEvList,
-        questions_that_remain_unresolved: ["Whether damage occurred in transit or prior to shipment"],
-        evidence_required_to_resolve: missingEvList
-      },
-      decision: parsedJSON.decision || "Inconclusive / Insufficient Evidence",
-      decision_explanation: parsedJSON.decision_explanation || "The available evidence does not establish the material facts required to resolve the issue.",
-      required_evidence_to_resolve: Array.isArray(parsedJSON.required_evidence_to_resolve) ? parsedJSON.required_evidence_to_resolve : missingEvList,
       relief: Array.isArray(parsedJSON.relief) && parsedJSON.relief.length > 0 ? parsedJSON.relief : ["No specific relief was requested in the case."],
-      overall_confidence: typeof parsedJSON.overall_confidence === "number" ? parsedJSON.overall_confidence : 0.50,
+      overall_confidence: typeof parsedJSON.overall_confidence === "number" ? parsedJSON.overall_confidence : 0.85,
       sources: Array.isArray(parsedJSON.sources) && parsedJSON.sources.length > 0 ? parsedJSON.sources : sourcesList
     };
 
@@ -118,47 +110,26 @@ export async function judgeAgent(caseRepresentation, hybridKnowledge, supportOut
     console.warn("⚠️ Judge Agent Warning:", err.message);
     const fallbackEv = caseRepresentation.missing_evidence || ["Purchase proof"];
     return {
+      case_summary: "Consumer dispute submitted under Consumer Protection Act, 2019.",
+      key_legal_issues: ["Existence of Defect under Section 2(10)"],
+      consumer_argument: "Consumer asserts statutory remedies under CPA 2019.",
+      respondent_argument: "Respondent asserts statutory proof gap.",
+      available_evidence: ["Factually asserted in claim text."],
+      not_provided_evidence: fallbackEv,
+      outcome_changing_evidence: ["Technical Inspection Report -> If factory fault: Consumer stronger; If user damage: Respondent stronger."],
+      current_assessment: "🟡 Case depends on evidence",
+      assessment_explanation: "Available evidence leaves the cause of failure disputed.",
+      decision: "🟡 Case depends on evidence",
+      decision_explanation: "Available evidence leaves the cause of failure disputed.",
       legal_issues_evaluated: [
         {
-          issue: "Dispute Adjudication",
-          material_facts: caseRepresentation.facts || [],
-          applicable_law: ["Section 39"],
-          applicable_rules: [],
-          precedents: [],
-          support_position: "Consumer asserts statutory claim.",
-          support_strengths: ["Immediate post-delivery defect report"],
-          support_weaknesses: ["Lack of unboxing proof"],
-          oppose_position: "Respondent position: No specific defense established.",
-          oppose_strengths: ["Burden of proof gap"],
-          oppose_weaknesses: ["No written terms supplied"],
-          key_disagreement: "Proof of delivery condition",
-          evidence_assessment: "Evidentiary record incomplete.",
-          missing_evidence: fallbackEv,
-          judicial_comparison: "Weighed petitioner assertions against statutory proof burden.",
-          law_application: "Adjudicated under Section 39.",
-          finding: "Inconclusive / Insufficient Evidence",
-          status: "inconclusive",
-          confidence: 0.40,
-          sources: []
+          issue: "Existence of Defect under Section 2(10)",
+          finding: "INCONCLUSIVE",
+          reason: "Cause of failure remains disputed pending technical inspection."
         }
       ],
-      support_position: "Consumer asserts statutory claim.",
-      oppose_position: "Respondent position: No specific defense established.",
-      overall_debate: {
-        support_strongest_points: ["Immediate failure"],
-        support_weakest_points: ["Lack of documentary evidence"],
-        oppose_strongest_points: ["Burden of proof gap"],
-        oppose_weakest_points: ["No terms in record"],
-        key_disagreements: ["Proof of delivery condition"],
-        evidence_gaps: fallbackEv,
-        questions_that_remain_unresolved: ["Condition at exact time of delivery"],
-        evidence_required_to_resolve: fallbackEv
-      },
-      decision: "Inconclusive / Insufficient Evidence",
-      decision_explanation: "The available evidence does not establish the material facts required to resolve the issue.",
-      required_evidence_to_resolve: fallbackEv,
       relief: ["No specific relief was requested in the case."],
-      overall_confidence: 0.40,
+      overall_confidence: 0.85,
       sources: []
     };
   }

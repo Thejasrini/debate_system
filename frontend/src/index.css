@@ -1,4 +1,4 @@
-/* LexAgent Legal Design System — Module G Token System */
+/* LexAgent Legal Design System — Module G Token System & Premium UI */
 
 :root {
   /* Color Palette — Dark Mode (Default) */
@@ -74,7 +74,7 @@
   --radius-lg: 12px;
 
   /* Layout Widths */
-  --max-width: 1200px;
+  --max-width: 1280px;
   --content-width: 800px;
 }
 
@@ -114,6 +114,8 @@
 body {
   margin: 0;
   background-color: var(--bg);
+  background-image: radial-gradient(circle at 50% -20%, rgba(201, 164, 94, 0.12), transparent 70%);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-body);
   font-size: var(--text-body);
@@ -140,16 +142,215 @@ code, pre, .font-mono {
   font-size: var(--text-small);
 }
 
-/* Layout Utilities */
-.container-custom {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0 var(--space-xl);
+.text-brass { color: var(--brass) !important; }
+.text-parchment { color: var(--ink) !important; }
+.text-muted { color: var(--ink-muted) !important; }
+
+/* Docket Topbar */
+.docket-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-.content-custom {
-  max-width: var(--content-width);
-  margin: 0 auto;
+.docket-title-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.docket-number {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--brass);
+  background: var(--brass-light);
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-bright);
+}
+
+/* Status Pills */
+.docket-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.docket-status-pill.draft {
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--ink-muted);
+  border: 1px solid var(--line);
+}
+
+.docket-status-pill.in-session {
+  background: var(--brass-light);
+  color: var(--brass);
+  border: 1px solid var(--line-bright);
+  animation: pulse-border 2s infinite;
+}
+
+.docket-status-pill.verdict {
+  background: var(--support-bg);
+  color: var(--support-green-bright);
+  border: 1px solid var(--support-green);
+}
+
+.docket-status-pill.out-of-scope {
+  background: var(--oppose-bg);
+  color: var(--oppose-oxblood-bright);
+  border: 1px solid var(--oppose-oxblood);
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+/* Buttons */
+.btn-brass {
+  background-color: var(--brass);
+  color: var(--bg);
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(201, 164, 94, 0.3);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-brass:hover:not(:disabled) {
+  background-color: var(--brass-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(201, 164, 94, 0.4);
+}
+
+.btn-brass:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-theme-toggle {
+  background: var(--surface-hover);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-theme-toggle:hover {
+  border-color: var(--brass);
+  color: var(--brass);
+}
+
+.btn-outline-brass {
+  background: var(--brass-light);
+  border: 1px solid var(--brass);
+  color: var(--brass);
+  padding: 6px 16px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-outline-brass:hover {
+  background: var(--brass);
+  color: var(--bg);
+  box-shadow: 0 0 12px var(--brass-light);
+}
+
+/* Docket Cards */
+.docket-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.docket-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.petitioner-panel {
+  border-left: 4px solid var(--support-green);
+  box-shadow: 0 4px 20px rgba(78, 144, 120, 0.12);
+}
+
+.respondent-panel {
+  border-left: 4px solid var(--oppose-oxblood);
+  box-shadow: 0 4px 20px rgba(178, 90, 80, 0.12);
+}
+
+.bench-panel {
+  border: 2px solid var(--brass);
+  box-shadow: 0 0 30px rgba(201, 164, 94, 0.2);
+}
+
+.hairline-divider {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 32px 0;
+}
+
+/* Animated Gavel Icon */
+.gavel-icon-animated {
+  display: inline-block;
+  animation: pulseGavel 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseGavel {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: var(--line-bright); }
+  50% { border-color: var(--brass); }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Accessibility Focus States */

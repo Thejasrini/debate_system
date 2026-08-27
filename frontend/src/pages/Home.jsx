@@ -3,7 +3,11 @@ import QuestionBox from "../components/QuestionBox";
 import SupportCard from "../components/SupportCard";
 import OpposeCard from "../components/OpposeCard";
 import JudgeCard from "../components/JudgeCard";
+import BalanceBar from "../components/BalanceBar";
+import CitationGraph from "../components/CitationGraph";
 import { streamDebate } from "../services/api";
+import { downloadVerdictPDF } from "../services/exportApi";
+import { submitFeedbackApi } from "../services/feedbackApi";
 
 export default function Home() {
   const [theme, setTheme] = useState(() => {
@@ -18,23 +22,29 @@ export default function Home() {
 
   const [pastTurns, setPastTurns] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState("");
-  
+
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [category, setCategory] = useState(null);
   const [outOfScope, setOutOfScope] = useState(false);
   const [outOfScopeMessage, setOutOfScopeMessage] = useState("");
-  
+
   const [caseReasoning, setCaseReasoning] = useState(null);
   const [retrieval, setRetrieval] = useState(null);
   const [support, setSupport] = useState(null);
   const [oppose, setOppose] = useState(null);
   const [judge, setJudge] = useState(null);
-  
+
   const [supportLoading, setSupportLoading] = useState(false);
   const [opposeLoading, setOpposeLoading] = useState(false);
   const [judgeLoading, setJudgeLoading] = useState(false);
 
   const [error, setError] = useState(null);
+  const [downloading, setDownloading] = useState(false);
+  const [showGraph, setShowGraph] = useState(false);
+
+  const [feedbackRating, setFeedbackRating] = useState(null);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [feedbackDone, setFeedbackDone] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -48,11 +58,14 @@ export default function Home() {
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      const timeStr = now.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-      }).toUpperCase() + " " + now.toLocaleTimeString("en-US", { hour12: false });
+      const timeStr =
+        now.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric"
+        }).toUpperCase() +
+        " " +
+        now.toLocaleTimeString("en-US", { hour12: false });
       setCurrentTime(timeStr + " IST");
     };
 
@@ -86,6 +99,10 @@ export default function Home() {
     setOpposeLoading(false);
     setJudgeLoading(false);
     setIsAnalyzing(false);
+    setShowGraph(false);
+    setFeedbackDone(false);
+    setFeedbackRating(null);
+    setFeedbackComment("");
   };
 
   const handleStartStream = (question) => {
@@ -115,6 +132,7 @@ export default function Home() {
     setOppose(null);
     setJudge(null);
     setError(null);
+    setFeedbackDone(false);
 
     setSupportLoading(true);
     setOpposeLoading(true);
@@ -165,6 +183,48 @@ export default function Home() {
     );
   };
 
+  const handleDownloadPDF = async () => {
+    if (!threadId) return;
+    setDownloading(true);
+    try {
+      await downloadVerdictPDF(threadId, 0, localStorage.getItem("accessToken"));
+    } catch (err) {
+      setError("Failed to download PDF verdict report.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleFeedbackSubmit = async (e) => {
+    e.preventDefault();
+    if (!feedbackRating || !threadId) return;
+    try {
+      await submitFeedbackApi(
+        threadId,
+        pastTurns.length,
+        feedbackRating,
+        feedbackComment,
+        localStorage.getItem("accessToken")
+      );
+      setFeedbackDone(true);
+    } catch (err) {
+      console.warn("Feedback warning:", err.message);
+      setFeedbackDone(true);
+    }
+  };
+
+  // Calculate dynamic position for signature BalanceBar component (-1.0 Petitioner to +1.0 Respondent)
+  const getBalancePosition = () => {
+    if (judge) {
+      if (judge.decision && judge.decision.includes("Consumer")) return -0.7;
+      if (judge.decision && judge.decision.includes("Respondent")) return 0.7;
+      return 0.0;
+    }
+    if (support && !oppose) return -0.4;
+    if (oppose && !support) return 0.4;
+    return 0.0;
+  };
+
   const getStatusPill = () => {
     if (outOfScope) {
       return (
@@ -195,8 +255,7 @@ export default function Home() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-navy)" }}>
-      
+    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)" }}>
       {/* Top Header Bar */}
       <header className="docket-topbar">
         <div className="docket-title-group">
@@ -226,7 +285,6 @@ export default function Home() {
 
       {/* Main Container */}
       <main style={{ maxWidth: "1280px", margin: "0 auto", padding: "28px 24px 160px 24px" }}>
-        
         {/* Context Header */}
         <div style={{ marginBottom: "28px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "12px" }}>
           <div>
@@ -243,16 +301,16 @@ export default function Home() {
           </div>
         </div>
 
-        {/* PAST CONVERSATION TURNS (CONTINUOUS CHAT HISTORY) */}
+        {/* PAST CONVERSATION TURNS */}
         {pastTurns.length > 0 && (
           <div style={{ marginBottom: "35px", display: "flex", flexDirection: "column", gap: "30px" }}>
             <div className="font-mono text-brass" style={{ fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1.5px" }}>
               📜 PREVIOUS COURT SESSION TURNS ({pastTurns.length})
             </div>
             {pastTurns.map((turn, turnIdx) => (
-              <div key={turnIdx} style={{ padding: "20px", backgroundColor: "rgba(15, 23, 42, 0.6)", borderRadius: "8px", border: "1px solid var(--border-hairline)" }}>
+              <div key={turnIdx} style={{ padding: "20px", backgroundColor: "var(--surface)", borderRadius: "12px", border: "1px solid var(--line)" }}>
                 <div style={{ marginBottom: "12px" }}>
-                  <span className="font-mono text-brass" style={{ fontSize: "0.8rem", backgroundColor: "rgba(201, 169, 97, 0.15)", padding: "3px 8px", borderRadius: "4px" }}>
+                  <span className="font-mono text-brass" style={{ fontSize: "0.8rem", backgroundColor: "var(--brass-light)", padding: "3px 8px", borderRadius: "4px" }}>
                     Turn #{turnIdx + 1} Question
                   </span>
                   <p style={{ margin: "6px 0 0 0", color: "var(--text-parchment)", fontSize: "1rem", fontWeight: "600" }}>
@@ -277,7 +335,7 @@ export default function Home() {
 
         {/* Error Banner */}
         {error && (
-          <div style={{ padding: "16px", backgroundColor: "var(--courtroom-red-bg)", border: "1px solid var(--courtroom-red)", color: "var(--courtroom-red-bright)", borderRadius: "6px", marginBottom: "24px" }}>
+          <div style={{ padding: "16px", backgroundColor: "var(--courtroom-red-bg)", border: "1px solid var(--courtroom-red)", color: "var(--courtroom-red-bright)", borderRadius: "8px", marginBottom: "24px" }}>
             ⚠️ <strong>Filing Error:</strong> {error}
           </div>
         )}
@@ -300,11 +358,10 @@ export default function Home() {
         {/* Active Debate View */}
         {!outOfScope && (isAnalyzing || support || oppose || judge || caseReasoning) && (
           <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-            
             {/* Category Tag */}
             {category && (
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <span className="font-mono text-brass" style={{ backgroundColor: "var(--accent-brass-light)", padding: "4px 12px", borderRadius: "4px", border: "1px solid var(--border-hairline-bright)", fontSize: "0.85rem" }}>
+                <span className="font-mono text-brass" style={{ backgroundColor: "var(--accent-brass-light)", padding: "6px 14px", borderRadius: "6px", border: "1px solid var(--border-hairline-bright)", fontSize: "0.85rem", fontWeight: "600" }}>
                   🏷️ STATUTORY CATEGORY: {category.toUpperCase()}
                 </span>
               </div>
@@ -365,6 +422,11 @@ export default function Home() {
               </div>
             )}
 
+            {/* Signature Balance Bar Element */}
+            {(support || oppose || judge) && (
+              <BalanceBar position={getBalancePosition()} label="Evidentiary Balance of Probability" animated={true} />
+            )}
+
             {/* Dual Counsel Arguments */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
               <div>
@@ -398,7 +460,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Bench Verdict & Required Proof Checklist */}
+            {/* Bench Verdict Card & Actions */}
             <div>
               {judgeLoading ? (
                 <div className="docket-card bench-panel">
@@ -410,15 +472,112 @@ export default function Home() {
                   </div>
                 </div>
               ) : (
-                <JudgeCard data={judge} />
+                judge && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                    <JudgeCard data={judge} />
+
+                    {/* Verdict Export & Action Toolbar */}
+                    <div className="docket-card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", borderColor: "var(--brass)" }}>
+                      <div>
+                        <span className="font-mono text-brass" style={{ fontSize: "0.8rem" }}>COURT ORDER ACTIONS</span>
+                        <h4 className="font-serif text-parchment" style={{ margin: "4px 0 0 0" }}>Adjudication Complete</h4>
+                      </div>
+
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <button
+                          onClick={() => setShowGraph(!showGraph)}
+                          className="btn-theme-toggle"
+                        >
+                          {showGraph ? "Hide Citation Graph" : "📊 View Citation Graph"}
+                        </button>
+                        <button
+                          onClick={handleDownloadPDF}
+                          disabled={downloading}
+                          className="btn-outline-brass"
+                        >
+                          {downloading ? "Generating PDF..." : "📄 Download Court Order PDF"}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Inline D3 Citation Graph Toggle */}
+                    {showGraph && threadId && (
+                      <div className="docket-card">
+                        <CitationGraph threadId={threadId} />
+                      </div>
+                    )}
+
+                    {/* Feedback Rating Widget */}
+                    <div className="docket-card">
+                      <h4 className="font-serif text-brass" style={{ margin: "0 0 12px 0" }}>Accuracy Feedback Audit</h4>
+                      {feedbackDone ? (
+                        <p className="font-mono text-brass" style={{ fontSize: "0.85rem", margin: 0 }}>
+                          ✓ Thank you! Your feedback has been logged for alignment analytics.
+                        </p>
+                      ) : (
+                        <form onSubmit={handleFeedbackSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                          <div style={{ display: "flex", gap: "12px" }}>
+                            <button
+                              type="button"
+                              onClick={() => setFeedbackRating("thumbs_up")}
+                              style={{
+                                padding: "8px 16px",
+                                borderRadius: "6px",
+                                border: feedbackRating === "thumbs_up" ? "1px solid var(--support-green)" : "1px solid var(--line)",
+                                backgroundColor: feedbackRating === "thumbs_up" ? "var(--support-bg)" : "transparent",
+                                color: feedbackRating === "thumbs_up" ? "var(--support-green-bright)" : "var(--ink-muted)",
+                                cursor: "pointer"
+                              }}
+                            >
+                              👍 Thumbs Up (Accurate Verdict)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setFeedbackRating("thumbs_down")}
+                              style={{
+                                padding: "8px 16px",
+                                borderRadius: "6px",
+                                border: feedbackRating === "thumbs_down" ? "1px solid var(--oppose-oxblood)" : "1px solid var(--line)",
+                                backgroundColor: feedbackRating === "thumbs_down" ? "var(--oppose-bg)" : "transparent",
+                                color: feedbackRating === "thumbs_down" ? "var(--oppose-oxblood-bright)" : "var(--ink-muted)",
+                                cursor: "pointer"
+                              }}
+                            >
+                              👎 Thumbs Down (Inaccurate Verdict)
+                            </button>
+                          </div>
+                          {feedbackRating && (
+                            <div style={{ display: "flex", gap: "12px" }}>
+                              <input
+                                type="text"
+                                value={feedbackComment}
+                                onChange={(e) => setFeedbackComment(e.target.value)}
+                                placeholder="Optional feedback comment on statutory reasoning..."
+                                style={{
+                                  flex: 1,
+                                  padding: "8px 12px",
+                                  borderRadius: "6px",
+                                  border: "1px solid var(--line)",
+                                  backgroundColor: "var(--bg)",
+                                  color: "var(--ink)",
+                                  fontSize: "0.85rem"
+                                }}
+                              />
+                              <button type="submit" className="btn-outline-brass">
+                                Submit Feedback
+                              </button>
+                            </div>
+                          )}
+                        </form>
+                      )}
+                    </div>
+                  </div>
+                )
               )}
             </div>
-
           </div>
         )}
-
       </main>
-
     </div>
   );
 }

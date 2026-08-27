@@ -5,6 +5,44 @@ import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 /**
+ * @route GET /api/history/stats
+ * @desc Retrieves user aggregate case metrics (total cases, total turns, average confidence)
+ */
+router.get("/stats", protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const threads = await Thread.find({ userId }).lean();
+
+    const totalCases = threads.length;
+    let totalTurns = 0;
+    let totalConfidence = 0;
+    let confidenceCount = 0;
+
+    threads.forEach((t) => {
+      const turns = Array.isArray(t.turns) ? t.turns : [];
+      totalTurns += turns.length;
+      turns.forEach((turn) => {
+        if (turn.judge && typeof turn.judge.overall_confidence === "number") {
+          totalConfidence += turn.judge.overall_confidence;
+          confidenceCount++;
+        }
+      });
+    });
+
+    const averageConfidence = confidenceCount > 0 ? (totalConfidence / confidenceCount) * 100 : 0;
+
+    return res.status(200).json({
+      totalCases,
+      totalTurns,
+      averageConfidence: parseFloat(averageConfidence.toFixed(1))
+    });
+  } catch (err) {
+    console.error("❌ Error fetching history stats:", err.message);
+    return res.status(500).json({ error: "Failed to retrieve history statistics." });
+  }
+});
+
+/**
  * @route GET /api/history
  * @desc Retrieves all case threads owned by the authenticated user
  */
@@ -21,7 +59,9 @@ router.get("/", protect, async (req, res) => {
       createdAt: t.createdAt,
       turnCount: Array.isArray(t.turns) ? t.turns.length : 0,
       firstQuestion: Array.isArray(t.turns) && t.turns.length > 0 ? t.turns[0].question : "No questions yet",
-      latestTurnTimestamp: Array.isArray(t.turns) && t.turns.length > 0 ? t.turns[t.turns.length - 1].timestamp : t.createdAt
+      latestTurnTimestamp: Array.isArray(t.turns) && t.turns.length > 0 ? t.turns[t.turns.length - 1].timestamp : t.createdAt,
+      latestDecision: Array.isArray(t.turns) && t.turns.length > 0 ? t.turns[t.turns.length - 1].judge?.decision : "Pending",
+      confidence: Array.isArray(t.turns) && t.turns.length > 0 ? t.turns[t.turns.length - 1].judge?.overall_confidence : 0
     }));
 
     return res.status(200).json({

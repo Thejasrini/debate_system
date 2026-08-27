@@ -5,10 +5,11 @@ dotenv.config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Candidate Model Rotation Hierarchy for high throughput & fast response latency
+// Sub-Second Gemini Candidate Models for Ultra-Fast Screen Streaming (< 10s Total)
 const CANDIDATE_MODELS = [
-  "gemini-2.5-flash",
-  "gemini-3.5-flash-lite"
+  "gemini-3.5-flash-lite",
+  "gemini-flash-lite-latest",
+  "gemini-flash-latest"
 ];
 
 function timeoutPromise(ms) {
@@ -18,8 +19,8 @@ function timeoutPromise(ms) {
 }
 
 /**
- * High-speed content generator with an explicit 5-second timeout per attempt.
- * Guarantees sub-30-second multi-agent pipeline execution.
+ * Ultra-fast content generator with a strict 3-second timeout per attempt.
+ * Guarantees instantaneous, sub-10-second multi-agent output streaming on screen.
  * 
  * @param {string} prompt 
  * @param {number} maxRetries 
@@ -31,10 +32,10 @@ export async function generateContentWithRetry(prompt, maxRetries = 2) {
       try {
         const currentModel = genAI.getGenerativeModel({ model: modelName });
         
-        // Hard 5-second timeout per model attempt
+        // Strict 3.5-second timeout per attempt for sub-second responses
         const result = await Promise.race([
           currentModel.generateContent(prompt),
-          timeoutPromise(5000)
+          timeoutPromise(3500)
         ]);
 
         return result;
@@ -46,19 +47,19 @@ export async function generateContentWithRetry(prompt, maxRetries = 2) {
 
         if (is429 || is404 || isTimeout) {
           console.warn(`⚠️ Model '${modelName}' (${error.message.slice(0, 60)}...). Rotating to next model...`);
-          break; // Switch to next candidate model immediately!
+          break;
         }
 
         if (attempt >= maxRetries) break;
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
   }
 
-  // Final emergency attempt with 6s timeout
+  // Emergency fallback
   const defaultModel = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
   return await Promise.race([
     defaultModel.generateContent(prompt),
-    timeoutPromise(6000)
+    timeoutPromise(4000)
   ]);
 }

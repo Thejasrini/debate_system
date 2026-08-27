@@ -32,7 +32,8 @@
     "jsonwebtoken": "^9.0.2",
     "langchain": "^1.5.4",
     "mongoose": "^9.9.3",
-    "pdf-parse": "^2.4.5"
+    "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.20.1"
   },
   "devDependencies": {
     "jest": "^30.3.0",

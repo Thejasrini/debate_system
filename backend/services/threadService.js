@@ -35,8 +35,14 @@ export async function getThread(threadId) {
 export async function saveTurn(threadId, turnData, userId = null, category = "") {
   if (!threadId || !turnData) return;
 
+  const judgeConf = turnData.judge?.overall_confidence !== undefined
+    ? turnData.judge.overall_confidence
+    : null;
+
   const newTurn = {
     ...turnData,
+    category: category || turnData.category || "",
+    judgeConfidence: judgeConf,
     timestamp: new Date()
   };
 

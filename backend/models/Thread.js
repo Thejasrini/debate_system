@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 const TurnSchema = new mongoose.Schema({
   question: { type: String, required: true },
   retrievedContext: { type: String, default: "" },
+  category: { type: String, default: "" },
+  judgeConfidence: { type: Number, default: null },
   support: { type: Object, required: true },
   oppose: { type: Object, required: true },
   judge: { type: Object, required: true },

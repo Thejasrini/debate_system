@@ -2,10 +2,11 @@ import express from "express";
 import crypto from "crypto";
 import { runDebate } from "../services/orchestrator.js";
 import { getThread, saveTurn } from "../services/threadService.js";
+import { optionalProtect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/", optionalProtect, async (req, res) => {
   try {
     const { question, threadId: reqThreadId } = req.body;
 
@@ -17,6 +18,7 @@ router.post("/", async (req, res) => {
 
     // Assign or reuse threadId
     const activeThreadId = reqThreadId || crypto.randomUUID();
+    const userId = req.user ? req.user._id : null;
 
     // Set Server-Sent Event (SSE) and CORS headers
     res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
@@ -51,16 +53,17 @@ router.post("/", async (req, res) => {
       history
     );
 
-    // 4. Save new turn to MongoDB / Thread Service if in-scope
+    // 4. Save new turn to MongoDB / Thread Service with userId association
     if (result && !result.outOfScope && result.support && result.oppose && result.judge) {
+      const category = (result.caseRepresentation && result.caseRepresentation.product_or_service) || "";
       await saveTurn(activeThreadId, {
         question,
         retrievedContext: result.retrievedContext || "",
         support: result.support,
         oppose: result.oppose,
         judge: result.judge
-      });
-      console.log(`💾 Turn saved successfully to thread "${activeThreadId}"`);
+      }, userId, category);
+      console.log(`💾 Turn saved successfully to thread "${activeThreadId}" for ${userId ? `user "${userId}"` : "guest user"}`);
     }
 
     res.end();

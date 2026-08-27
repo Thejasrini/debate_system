@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import debateRoute from "./routes/debate.js";
+import authRoute from "./routes/auth.js";
+import historyRoute from "./routes/history.js";
 import { connectDB } from "./config/db.js";
 
 dotenv.config();
@@ -25,6 +27,9 @@ app.get("/", (req, res) => {
   res.send("LexAgent Backend Running 🚀");
 });
 
+// Mount Authentication & History Routes
+app.use("/api/auth", authRoute);
+app.use("/api/history", historyRoute);
 app.use("/api/debate", debateRoute);
 
 const PORT = process.env.PORT || 5000;

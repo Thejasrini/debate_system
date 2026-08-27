@@ -5,6 +5,7 @@ import { supportAgent } from "../agents/supportAgent.js";
 import { opposeAgent } from "../agents/opposeAgent.js";
 import { judgeAgent } from "../agents/judgeAgent.js";
 import { validateAgentOutput } from "./groundingValidator.js";
+import { semanticValidate } from "./semanticValidator.js";
 
 // List of allowed consumer-law-relevant category keywords for Consumer Protection Act, 2019
 const IN_SCOPE_KEYWORDS = [
@@ -16,7 +17,10 @@ const IN_SCOPE_KEYWORDS = [
   "product liability",
   "misleading advertisement",
   "consumer protection",
-  "general consumer law"
+  "general consumer law",
+  "consumer dispute",
+  "general",
+  "other / general"
 ];
 
 function isCategoryInScope(category = "") {
@@ -26,7 +30,7 @@ function isCategoryInScope(category = "") {
 }
 
 /**
- * Fast Parallel Orchestrator with live step-by-step progress events.
+ * Fast Parallel Orchestrator with live step-by-step progress events and Module C Semantic Grounding.
  */
 export async function runDebate(question, customContext = "", onEvent = null, history = []) {
   console.log("⚖ LexAgent Fast Multi-Agent Pipeline Started");
@@ -56,7 +60,7 @@ export async function runDebate(question, customContext = "", onEvent = null, hi
     if (intentResult && typeof intentResult === "object" && intentResult.category) {
       category = intentResult.category;
       confidence = intentResult.confidence !== undefined ? intentResult.confidence : 80;
-      inScope = isCategoryInScope(category) && confidence >= 50;
+      inScope = isCategoryInScope(category) && confidence >= 40;
     }
   } catch (err) {
     console.warn("⚠️ intentAgent error, failing open:", err.message);
@@ -96,8 +100,8 @@ export async function runDebate(question, customContext = "", onEvent = null, hi
 
   emit("retrieval", hybridKnowledge);
 
-  // 4. STEP 4: Parallel Support & Oppose Counsel Execution
-  emit("status", { message: "⚖️ Step 4/5: Formulating Support & Oppose Counsel arguments in parallel..." });
+  // 4. STEP 4: Parallel Support & Oppose Counsel Execution with Semantic Grounding
+  emit("status", { message: "⚖️ Step 4/5: Formulating Support & Oppose Counsel arguments with semantic validation..." });
   
   const [rawSupport, rawOppose] = await Promise.all([
     supportAgent(caseRepresentation, hybridKnowledge, history),
@@ -105,15 +109,29 @@ export async function runDebate(question, customContext = "", onEvent = null, hi
   ]);
 
   const support = validateAgentOutput("Support", rawSupport, retrievedContext);
-  emit("support", support);
-
   const oppose = validateAgentOutput("Oppose", rawOppose, retrievedContext);
-  emit("oppose", oppose);
 
-  // 5. STEP 5: Judicial Bench Adjudication
+  // Module C: Semantic Entailment Fact-checking Layer
+  const [supportSemanticReport, opposeSemanticReport] = await Promise.all([
+    semanticValidate("Support", support, retrievedContext),
+    semanticValidate("Oppose", oppose, retrievedContext)
+  ]);
+
+  support.semantic_grounding_report = supportSemanticReport;
+  oppose.semantic_grounding_report = opposeSemanticReport;
+
+  emit("support", support);
+  emit("oppose", oppose);
+  emit("semanticGrounding", { support: supportSemanticReport, oppose: opposeSemanticReport });
+
+  // 5. STEP 5: Judicial Bench Adjudication (Consumes Semantic Validation Reports)
   emit("status", { message: "🔨 Step 5/5: Judicial Bench evaluating evidence & rendering verdict..." });
   const rawJudge = await judgeAgent(caseRepresentation, hybridKnowledge, support, oppose, history);
   const judge = validateAgentOutput("Judge", rawJudge, retrievedContext);
+  
+  const judgeSemanticReport = await semanticValidate("Judge", judge, retrievedContext);
+  judge.semantic_grounding_report = judgeSemanticReport;
+
   emit("judge", judge);
 
   emit("done", {});

@@ -1,13 +1,15 @@
 import fs from "fs";
 import path from "path";
 
-const JUDGMENTS_PATH = path.resolve("./data/consumer_protection_judgments.json");
-const LEGISLATION_PATH = path.resolve("./data/primary_legislation_rules.json");
+const NORMALIZED_PRECEDENTS_PATH = path.resolve("./data/normalized/precedents.json");
+const NORMALIZED_STATUTES_PATH = path.resolve("./data/normalized/statutes.json");
+const LEGACY_JUDGMENTS_PATH = path.resolve("./data/consumer_protection_judgments.json");
+const LEGACY_LEGISLATION_PATH = path.resolve("./data/primary_legislation_rules.json");
 
 /**
  * Module 6: Grounding Validator & Source Traceability Interceptor.
  * Performs deterministic verification on legal citations, sections, rules, and precedents.
- * Checks against verified dataset records in primary_legislation_rules.json and consumer_protection_judgments.json.
+ * Checks against verified dataset records in normalized precedents.json and statutes.json.
  * 
  * @param {string} agentName "Support" | "Oppose" | "Judge"
  * @param {object} output Agent JSON response object
@@ -34,33 +36,47 @@ export function validateAgentOutput(agentName, output, context = "") {
   let verifiedJudgments = [];
   let verifiedLegislation = [];
   try {
-    if (fs.existsSync(JUDGMENTS_PATH)) {
-      verifiedJudgments = JSON.parse(fs.readFileSync(JUDGMENTS_PATH, "utf-8"));
+    const precPath = fs.existsSync(NORMALIZED_PRECEDENTS_PATH) ? NORMALIZED_PRECEDENTS_PATH : LEGACY_JUDGMENTS_PATH;
+    if (fs.existsSync(precPath)) {
+      verifiedJudgments = JSON.parse(fs.readFileSync(precPath, "utf-8"));
     }
-    if (fs.existsSync(LEGISLATION_PATH)) {
-      verifiedLegislation = JSON.parse(fs.readFileSync(LEGISLATION_PATH, "utf-8"));
+
+    const statPath = fs.existsSync(NORMALIZED_STATUTES_PATH) ? NORMALIZED_STATUTES_PATH : LEGACY_LEGISLATION_PATH;
+    if (fs.existsSync(statPath)) {
+      verifiedLegislation = JSON.parse(fs.readFileSync(statPath, "utf-8"));
     }
   } catch (err) {
     console.warn("⚠️ Grounding dataset loading warning:", err.message);
   }
 
-  const validJudgmentNames = new Set(verifiedJudgments.map(j => j.case_name.toLowerCase().trim()));
-  const validCitations = new Set(verifiedJudgments.map(j => j.citation.toLowerCase().trim()));
+  const validJudgmentNames = new Set(
+    verifiedJudgments.map((j) => {
+      const name = (j.metadata && j.metadata.case_name) || j.case_name || "";
+      return name.toLowerCase().trim();
+    })
+  );
+
+  const validCitations = new Set(
+    verifiedJudgments.map((j) => {
+      const cit = (j.metadata && j.metadata.citation) || j.citation || "";
+      return cit.toLowerCase().trim();
+    })
+  );
 
   // 1. Audit Precedents
   const precedentsList = output.supporting_precedents || output.contrary_precedents || output.precedents_considered || [];
   if (Array.isArray(precedentsList)) {
-    precedentsList.forEach(p => {
+    precedentsList.forEach((p) => {
       if (p.case_name) {
         const nameLower = p.case_name.toLowerCase().trim();
-        const isValid = validJudgmentNames.has(nameLower) || Array.from(validJudgmentNames).some(v => v.includes(nameLower.substring(0, 15)));
+        const isValid = validJudgmentNames.has(nameLower) || Array.from(validJudgmentNames).some((v) => v.includes(nameLower.substring(0, 15)));
         if (!isValid) {
           fabricatedSources.push(`Unverified Precedent Case Name: "${p.case_name}" not found in verified judgments dataset.`);
         }
       }
       if (p.citation) {
         const citLower = p.citation.toLowerCase().trim();
-        const isValid = validCitations.has(citLower) || Array.from(validCitations).some(v => v.includes(citLower));
+        const isValid = validCitations.has(citLower) || Array.from(validCitations).some((v) => v.includes(citLower));
         if (!isValid) {
           citationErrors.push(`Unverified Case Citation: "${p.citation}" not found in authoritative records.`);
         }
@@ -71,7 +87,7 @@ export function validateAgentOutput(agentName, output, context = "") {
   // 2. Audit Statutory Sections
   const sectionsList = output.applicable_sections || [];
   if (Array.isArray(sectionsList)) {
-    sectionsList.forEach(s => {
+    sectionsList.forEach((s) => {
       if (s.section && !context.toLowerCase().includes(s.section.toLowerCase()) && !s.section.includes("Section 2") && !s.section.includes("Section 39")) {
         warnings.push(`Statutory Section '${s.section}' cited by ${agentName} was not directly present in retrieved text chunks.`);
       }
@@ -80,7 +96,7 @@ export function validateAgentOutput(agentName, output, context = "") {
 
   // 3. Audit Unsupported Claims vs Context
   if (output.arguments && Array.isArray(output.arguments)) {
-    output.arguments.forEach(arg => {
+    output.arguments.forEach((arg) => {
       if (arg.argument && arg.argument.includes("misused") && !context.toLowerCase().includes("misused")) {
         unsupportedClaims.push(`Unsupported claim: 'misused' mentioned without factual context proof.`);
       }

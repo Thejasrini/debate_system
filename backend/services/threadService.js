@@ -26,11 +26,13 @@ export async function getThread(threadId) {
 }
 
 /**
- * Saves a new turn to a thread document.
+ * Saves a new turn to a thread document with user association.
  * @param {string} threadId 
  * @param {object} turnData { question, retrievedContext, support, oppose, judge }
+ * @param {string|null} userId Optional user ID owning the thread
+ * @param {string} category Optional category classification
  */
-export async function saveTurn(threadId, turnData) {
+export async function saveTurn(threadId, turnData, userId = null, category = "") {
   if (!threadId || !turnData) return;
 
   const newTurn = {
@@ -40,9 +42,22 @@ export async function saveTurn(threadId, turnData) {
 
   if (mongoose.connection.readyState === 1) {
     try {
+      const updatePayload = {
+        $push: { turns: newTurn }
+      };
+
+      // Set userId and category on thread creation / update if provided
+      const setOnInsert = {};
+      if (userId) setOnInsert.userId = userId;
+      if (category) setOnInsert.category = category;
+
+      if (Object.keys(setOnInsert).length > 0) {
+        updatePayload.$setOnInsert = setOnInsert;
+      }
+
       await Thread.findOneAndUpdate(
         { threadId },
-        { $push: { turns: newTurn } },
+        updatePayload,
         { upsert: true, new: true }
       );
       return;
@@ -52,7 +67,9 @@ export async function saveTurn(threadId, turnData) {
   }
 
   // Fallback to in-memory store
-  const existing = memoryStore.get(threadId) || { threadId, turns: [] };
+  const existing = memoryStore.get(threadId) || { threadId, userId, category, turns: [] };
+  if (userId && !existing.userId) existing.userId = userId;
+  if (category && !existing.category) existing.category = category;
   existing.turns.push(newTurn);
   memoryStore.set(threadId, existing);
 }

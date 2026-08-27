@@ -11,6 +11,8 @@ const TurnSchema = new mongoose.Schema({
 
 const ThreadSchema = new mongoose.Schema({
   threadId: { type: String, required: true, unique: true, index: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
+  category: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },
   turns: [TurnSchema]
 });

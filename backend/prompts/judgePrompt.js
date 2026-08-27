@@ -1,11 +1,34 @@
 /**
  * Prompt builder for Judge Agent (The Bench).
+ * Consumes semantic grounding validation reports for Support & Oppose arguments.
  * Strictly formats conditional case outcome into:
  * - 🟢 Consumer case stronger
  * - 🔴 Respondent case stronger
  * - 🟡 Case depends on evidence
  */
 export function getJudgePrompt(caseRepresentation, hybridKnowledge, supportOutput, opposeOutput, historySection = "") {
+  const supportSem = supportOutput.semantic_grounding_report || { summary: {} };
+  const opposeSem = opposeOutput.semantic_grounding_report || { summary: {} };
+
+  const supportContradicted = (supportSem.results || [])
+    .filter((r) => r.verdict === "contradicted")
+    .map((r) => `${r.cited_section}: "${r.claim_sentence}" (${r.explanation})`);
+
+  const opposeContradicted = (opposeSem.results || [])
+    .filter((r) => r.verdict === "contradicted")
+    .map((r) => `${r.cited_section}: "${r.claim_sentence}" (${r.explanation})`);
+
+  const semanticGroundingSection = `
+SEMANTIC GROUNDING FACT-CHECKING ANALYSIS:
+Support Counsel Claims: ${supportSem.summary.entailed || 0} Entailed, ${supportSem.summary.contradicted || 0} Contradicted, ${supportSem.summary.unsupported || 0} Unsupported.
+${supportContradicted.length > 0 ? `⚠️ Contradicted Support Claims: ${supportContradicted.join("; ")}` : "All support citations consistent."}
+
+Oppose Counsel Claims: ${opposeSem.summary.entailed || 0} Entailed, ${opposeSem.summary.contradicted || 0} Contradicted, ${opposeSem.summary.unsupported || 0} Unsupported.
+${opposeContradicted.length > 0 ? `⚠️ Contradicted Oppose Claims: ${opposeContradicted.join("; ")}` : "All oppose citations consistent."}
+
+JUDICIAL INSTRUCTION: Weight your verdict accordingly. Claims flagged as "contradicted" by the semantic grounding validator should be disregarded or explicitly noted as unconvincing in your adjudication.
+`;
+
   return `
 ROLE & JUDICIAL MANDATE:
 You are the Lead Judicial Bench for the Indian Consumer Disputes Redressal Commission in LexAgent.
@@ -28,6 +51,8 @@ CONDITIONAL OUTCOME RULES:
 4. NO REPETITION OF FULL CASE HISTORY: When follow-up proof is submitted, re-evaluate affected issues and update findings without repeating unchanged text.
 
 ${historySection}
+${semanticGroundingSection}
+
 STRUCTURED_CASE_MODEL:
 ${JSON.stringify(caseRepresentation, null, 2)}
 

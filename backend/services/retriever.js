@@ -1,5 +1,5 @@
 import { generateEmbedding } from "./embedding.js";
-import { queryCollection } from "./chroma.js";
+import { queryFaissIndex } from "./faissService.js";
 
 /**
  * Historical term patterns that indicate older 1986 Act references in PDF appendices.
@@ -54,8 +54,7 @@ export function normalizeSectionIdentifier(text = "", rawSection = "Section N/A"
 }
 
 /**
- * Retrieves the topK most relevant legal sections for a user query.
- * Prioritizes current Consumer Protection Act 2019 provisions over historical appendix text.
+ * Retrieves the topK most relevant legal sections for a user query using embedded FAISS vector store.
  * 
  * @param {string} query User question / claim
  * @param {number} topK Number of relevant legal chunks to retrieve (default: 3)
@@ -69,13 +68,13 @@ export async function retrieveRelevantSections(query, topK = 3) {
   // 1. Generate query embedding
   const queryEmbedding = await generateEmbedding(query);
 
-  // 2. Fetch candidate pool (4x topK to allow re-ranking non-historical 2019 provisions first)
+  // 2. Fetch candidate pool from local FAISS vector store
   const candidateLimit = Math.max(topK * 4, 12);
-  const queryResult = await queryCollection(queryEmbedding, candidateLimit);
+  const faissResults = await queryFaissIndex(queryEmbedding, candidateLimit);
 
-  if (!queryResult || !queryResult.documents || queryResult.documents.length === 0 || queryResult.documents[0].length === 0) {
+  if (!faissResults || faissResults.length === 0) {
     console.log("========================================");
-    console.log("LEXAGENT RETRIEVAL");
+    console.log("LEXAGENT RETRIEVAL (FAISS)");
     console.log("==================");
     console.log(`Query:\n${query}\n`);
     console.log("Retrieved chunks: None");
@@ -84,36 +83,28 @@ export async function retrieveRelevantSections(query, topK = 3) {
     return [];
   }
 
-  const documents = queryResult.documents[0] || [];
-  const metadatas = queryResult.metadatas[0] || [];
-  const distances = queryResult.distances ? queryResult.distances[0] : [];
-
   // 3. Process candidates with metadata normalization and historical detection
-  const candidates = documents.map((doc, idx) => {
-    const distance = distances[idx] !== undefined ? distances[idx] : 1;
-    const baseScore = Number((1 / (1 + distance)).toFixed(4));
-
-    const rawMeta = metadatas[idx] || {};
-    const rawSec = rawMeta.section || "Section N/A";
-    const preciseSection = normalizeSectionIdentifier(doc, rawSec);
+  const candidates = faissResults.map((item) => {
+    const baseScore = item.score || 0.6;
+    const rawMeta = item.metadata || {};
+    const rawSec = rawMeta.section_or_rule || rawMeta.section || "Section N/A";
+    const preciseSection = normalizeSectionIdentifier(item.text, rawSec);
 
     const metadata = {
-      act: rawMeta.act || "Consumer Protection Act, 2019",
+      act: rawMeta.act_or_document_name || rawMeta.act || "Consumer Protection Act, 2019",
       section: preciseSection,
       raw_section: rawSec,
       title: rawMeta.title || "Legal Provision",
       page: rawMeta.page !== undefined ? Number(rawMeta.page) : 1,
-      source: rawMeta.source || "Consumer_Protection_Act_2019.pdf",
+      source: rawMeta.source_url || rawMeta.source || "Consumer_Protection_Act_2019.pdf",
       documentVersion: "2019"
     };
 
-    const isHistorical = isHistoricalChunk(doc, metadata);
-
-    // Apply ranking adjustments: preference for current 2019 Act sections over historical 1986 appendix text
+    const isHistorical = isHistoricalChunk(item.text, metadata);
     const adjustedScore = isHistorical ? baseScore * 0.82 : baseScore;
 
     return {
-      text: doc,
+      text: item.text,
       metadata,
       score: baseScore,
       adjustedScore,
@@ -127,9 +118,9 @@ export async function retrieveRelevantSections(query, topK = 3) {
   // 5. Select topK results
   const selectedResults = candidates.slice(0, topK);
 
-  // 6. Print required debug output
+  // 6. Print debug output
   console.log("========================================");
-  console.log("LEXAGENT RETRIEVAL");
+  console.log("LEXAGENT FAISS RETRIEVAL");
   console.log("==================");
   console.log(`\nQuery:\n${query}\n`);
   console.log("Retrieved chunks:\n");
@@ -138,7 +129,6 @@ export async function retrieveRelevantSections(query, topK = 3) {
     console.log(`[${i + 1}]`);
     console.log(`Section: ${item.metadata.section}`);
     console.log(`Title: ${item.metadata.title}`);
-    console.log(`Page: ${item.metadata.page}`);
     console.log(`Source: ${item.metadata.source}`);
     console.log(`Score: ${item.score}`);
     if (item.isHistorical) {

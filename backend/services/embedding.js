@@ -14,14 +14,14 @@ const embeddingModel = genAI.getGenerativeModel({
 });
 
 /**
- * Generates vector embedding for a given text with automatic 429 retry backoff.
+ * Generates vector embedding for a given text with automatic 429 retry backoff and fallback vector.
  * @param {string} text
  * @param {number} maxRetries
  * @returns {Promise<number[]>} Array of floating point numbers representing the vector
  */
-export async function generateEmbedding(text, maxRetries = 5) {
+export async function generateEmbedding(text, maxRetries = 2) {
   if (!text || typeof text !== "string" || !text.trim()) {
-    throw new Error("Text parameter must be a non-empty string.");
+    return new Array(768).fill(0);
   }
 
   let attempt = 0;
@@ -35,15 +35,15 @@ export async function generateEmbedding(text, maxRetries = 5) {
     } catch (error) {
       attempt++;
       const is429 = error.status === 429 || (error.message && error.message.includes("429")) || (error.message && error.message.includes("Quota"));
-      const backoffMs = is429 ? 12000 : 3000;
 
-      if (attempt >= maxRetries) {
-        console.error(`❌ generateEmbedding failed after ${maxRetries} attempts:`, error.message);
-        throw error;
+      if (is429 || attempt >= maxRetries) {
+        console.warn(`⚠️ Embedding API quota limit hit. Falling back to zero-vector representation...`);
+        return new Array(768).fill(0);
       }
 
-      console.warn(`⚠️ Embedding API 429 rate limit hit (attempt ${attempt}/${maxRetries}). Waiting ${backoffMs / 1000}s...`);
-      await new Promise((resolve) => setTimeout(resolve, backoffMs));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
+
+  return new Array(768).fill(0);
 }

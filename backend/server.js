@@ -8,7 +8,6 @@ import feedbackRoute from "./routes/feedback.js";
 import exportRoute from "./routes/export.js";
 import adminRoute from "./routes/admin.js";
 import { connectDB } from "./config/db.js";
-import { globalRateLimiter } from "./middleware/rateLimiter.js";
 
 dotenv.config();
 
@@ -23,9 +22,6 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
-// Apply global rate limiting middleware
-app.use(globalRateLimiter);
 
 // Initialize MongoDB connection
 connectDB();

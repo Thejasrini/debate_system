@@ -3,11 +3,10 @@ import crypto from "crypto";
 import { runDebate } from "../services/orchestrator.js";
 import { getThread, saveTurn } from "../services/threadService.js";
 import { optionalProtect } from "../middleware/authMiddleware.js";
-import { debateRateLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
 
-router.post("/", optionalProtect, debateRateLimiter, async (req, res) => {
+router.post("/", optionalProtect, async (req, res) => {
   try {
     const { question, threadId: reqThreadId } = req.body;
 
@@ -39,38 +38,42 @@ router.post("/", optionalProtect, debateRateLimiter, async (req, res) => {
     // 2. Load prior thread history if existing threadId provided
     const existingThread = await getThread(activeThreadId);
     const history = existingThread && Array.isArray(existingThread.turns)
-      ? existingThread.turns
+      ? existingThread.turns.slice(-3)
       : [];
 
-    // 3. Execute multi-agent legal debate with live event callbacks
-    const finalResult = await runDebate(question.trim(), history, (event, data) => {
-      sendEvent(event, data);
-    });
-
-    // 4. Save turn to database (associated with userId if logged in)
-    if (finalResult && !finalResult.outOfScope) {
-      await saveTurn(
-        activeThreadId,
-        question.trim(),
-        finalResult.support,
-        finalResult.oppose,
-        finalResult.judge,
-        userId,
-        finalResult.category,
-        finalResult.judge?.overall_confidence
-      );
+    if (history.length > 0) {
+      console.log(`📜 Loaded ${history.length} prior turns for threadId "${activeThreadId}"`);
     }
 
-    // 5. Send completion event and close SSE stream
-    sendEvent("done", { threadId: activeThreadId, message: "Debate completed successfully." });
+    // 3. Execute debate with conversation history
+    const result = await runDebate(
+      question,
+      "",
+      (event, data) => sendEvent(event, data),
+      history
+    );
+
+    // 4. Save new turn to MongoDB / Thread Service with userId association
+    if (result && !result.outOfScope && result.support && result.oppose && result.judge) {
+      const category = (result.caseRepresentation && result.caseRepresentation.product_or_service) || "";
+      await saveTurn(activeThreadId, {
+        question,
+        retrievedContext: result.retrievedContext || "",
+        support: result.support,
+        oppose: result.oppose,
+        judge: result.judge
+      }, userId, category);
+      console.log(`💾 Turn saved successfully to thread "${activeThreadId}" for ${userId ? `user "${userId}"` : "guest user"}`);
+    }
+
     res.end();
-  } catch (err) {
-    console.error("❌ Error in SSE debate route:", err.message);
-    if (!res.headersSent) {
-      return res.status(500).json({ error: "Failed to process debate query. " + err.message });
-    } else {
-      res.write(`event: error\ndata: ${JSON.stringify({ error: err.message })}\n\n`);
+  } catch (error) {
+    console.error("⚠️ Error in SSE Debate route:", error.message);
+    try {
+      res.write(`event: error\ndata: ${JSON.stringify({ message: error.message })}\n\n`);
       res.end();
+    } catch (e) {
+      // stream closed
     }
   }
 });

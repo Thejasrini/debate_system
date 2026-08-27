@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -15,7 +15,6 @@ import HowItWorks from "./pages/HowItWorks";
 import Profile from "./pages/Profile";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import StyleGuide from "./pages/StyleGuide";
-import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -78,7 +77,7 @@ function App() {
               }
             />
 
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

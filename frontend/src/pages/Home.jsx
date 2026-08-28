@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import QuestionBox from "../components/QuestionBox";
 import SupportCard from "../components/SupportCard";
 import OpposeCard from "../components/OpposeCard";
@@ -8,8 +10,12 @@ import CitationGraph from "../components/CitationGraph";
 import { streamDebate } from "../services/api";
 import { downloadVerdictPDF } from "../services/exportApi";
 import { submitFeedbackApi } from "../services/feedbackApi";
+import { getThreadsApi, getThreadApi, deleteThreadApi } from "../services/historyApi";
 
 export default function Home() {
+  const { user, accessToken, logout } = useAuth();
+  const navigate = useNavigate();
+
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem("lexagent-theme");
     if (saved) return saved;
@@ -46,6 +52,11 @@ export default function Home() {
   const [feedbackComment, setFeedbackComment] = useState("");
   const [feedbackDone, setFeedbackDone] = useState(false);
 
+  // History Drawer & Threads state
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [historyThreads, setHistoryThreads] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("lexagent-theme", theme);
@@ -53,6 +64,11 @@ export default function Home() {
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
   useEffect(() => {
@@ -80,6 +96,82 @@ export default function Home() {
       setCaseNumber(`CPA/2019/${shortId}`);
     }
   }, [threadId]);
+
+  // Load history threads list
+  const loadHistoryThreads = async () => {
+    if (!accessToken) return;
+    setLoadingHistory(true);
+    try {
+      const res = await getThreadsApi(accessToken);
+      setHistoryThreads(res.threads || []);
+    } catch (err) {
+      console.warn("⚠️ Failed to load history threads:", err.message);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleOpenHistory = () => {
+    setShowHistoryModal(true);
+    loadHistoryThreads();
+  };
+
+  // Load selected previous thread into the Courtroom Terminal
+  const handleSelectThread = async (selectedThreadId) => {
+    try {
+      setLoadingHistory(true);
+      const res = await getThreadApi(selectedThreadId, accessToken);
+      if (res && res.thread) {
+        const t = res.thread;
+        setThreadId(t.threadId);
+        const shortId = t.threadId.slice(0, 4).toUpperCase();
+        setCaseNumber(`CPA/2019/${shortId}`);
+
+        const turns = Array.isArray(t.turns) ? t.turns : [];
+        if (turns.length > 0) {
+          const lastTurn = turns[turns.length - 1];
+          const prevs = turns.slice(0, turns.length - 1);
+          setPastTurns(prevs);
+
+          setCurrentQuestion(lastTurn.question);
+          setCategory(lastTurn.category || t.category || "Consumer Dispute");
+          setSupport(lastTurn.support || null);
+          setOppose(lastTurn.oppose || null);
+          setJudge(lastTurn.judge || null);
+          setRetrieval(null);
+          setCaseReasoning(null);
+        } else {
+          setPastTurns([]);
+          setCurrentQuestion("");
+          setSupport(null);
+          setOppose(null);
+          setJudge(null);
+        }
+
+        setOutOfScope(false);
+        setError(null);
+        setShowHistoryModal(false);
+      }
+    } catch (err) {
+      console.error("Failed to load thread:", err.message);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  // Delete a history thread
+  const handleDeleteThread = async (e, idToDelete) => {
+    e.stopPropagation();
+    try {
+      await deleteThreadApi(idToDelete, accessToken);
+      setHistoryThreads((prev) => prev.filter((item) => item.threadId !== idToDelete));
+      if (threadId === idToDelete) {
+        handleStartNewCase();
+      }
+    } catch (err) {
+      console.error("Failed to delete thread:", err.message);
+    }
+  };
 
   const handleStartNewCase = () => {
     setThreadId(null);
@@ -187,7 +279,7 @@ export default function Home() {
     if (!threadId) return;
     setDownloading(true);
     try {
-      await downloadVerdictPDF(threadId, 0, localStorage.getItem("accessToken"));
+      await downloadVerdictPDF(threadId, 0, accessToken);
     } catch (err) {
       setError("Failed to download PDF verdict report.");
     } finally {
@@ -204,7 +296,7 @@ export default function Home() {
         pastTurns.length,
         feedbackRating,
         feedbackComment,
-        localStorage.getItem("accessToken")
+        accessToken
       );
       setFeedbackDone(true);
     } catch (err) {
@@ -213,7 +305,6 @@ export default function Home() {
     }
   };
 
-  // Calculate dynamic position for signature BalanceBar component (-1.0 Petitioner to +1.0 Respondent)
   const getBalancePosition = () => {
     if (judge) {
       if (judge.decision && judge.decision.includes("Consumer")) return -0.7;
@@ -266,22 +357,142 @@ export default function Home() {
           {getStatusPill()}
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+          {/* History Feature Button */}
+          <button className="btn-outline-brass" onClick={handleOpenHistory} title="View Previous Case History">
+            📜 Case History
+          </button>
+
           <span className="font-mono text-muted" style={{ fontSize: "0.78rem" }}>
             {currentTime}
           </span>
 
           <button className="btn-theme-toggle" onClick={toggleTheme} title="Switch UI Theme Preference">
-            {theme === "dark" ? "☀️ Light Theme" : "🌙 Dark Theme"}
+            {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
           </button>
 
           {threadId && (
             <button className="btn-outline-brass" onClick={handleStartNewCase}>
-              ➕ Start New Case
+              ➕ New Case
             </button>
           )}
+
+          {/* User Profile & Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="px-3 py-1.5 rounded text-xs font-mono font-semibold border border-[var(--line)] text-red-400 hover:bg-red-500 hover:text-white transition cursor-pointer"
+            title="Sign Out of Session"
+          >
+            🚪 Logout ({user ? user.name.split(" ")[0] : "User"})
+          </button>
         </div>
       </header>
+
+      {/* HISTORY MODAL SIDEBAR / OVERLAY */}
+      {showHistoryModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            backdropFilter: "blur(6px)",
+            zIndex: 9999,
+            display: "flex",
+            justifyContent: "flex-end"
+          }}
+          onClick={() => setShowHistoryModal(false)}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "460px",
+              height: "100%",
+              backgroundColor: "var(--surface)",
+              borderLeft: "1px solid var(--line-bright)",
+              padding: "24px",
+              boxShadow: "-10px 0 30px rgba(0,0,0,0.5)",
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px"
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", paddingBottom: "16px" }}>
+              <div>
+                <h3 className="font-serif text-brass" style={{ margin: 0, fontSize: "1.25rem" }}>
+                  📜 Previous Case History
+                </h3>
+                <p className="text-muted font-mono" style={{ fontSize: "0.75rem", margin: "2px 0 0 0" }}>
+                  Saved adversarial debate threads for {user?.email}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowHistoryModal(false)}
+                className="font-mono text-muted hover:text-brass"
+                style={{ background: "none", border: "none", fontSize: "1.2rem", cursor: "pointer" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {loadingHistory ? (
+              <div className="font-mono text-brass text-center py-10">Loading previous case chats...</div>
+            ) : historyThreads.length === 0 ? (
+              <div className="text-center py-12 space-y-3">
+                <span style={{ fontSize: "2rem" }}>📂</span>
+                <p className="font-mono text-muted text-sm">No saved case history found yet.</p>
+                <p className="text-xs text-muted">File a new dispute in the Courtroom Terminal to start logging threads.</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {historyThreads.map((item) => (
+                  <div
+                    key={item.threadId}
+                    onClick={() => handleSelectThread(item.threadId)}
+                    style={{
+                      padding: "14px",
+                      borderRadius: "10px",
+                      border: threadId === item.threadId ? "1.5px solid var(--brass)" : "1px solid var(--line)",
+                      backgroundColor: threadId === item.threadId ? "var(--brass-light)" : "var(--bg)",
+                      cursor: "pointer",
+                      transition: "all 0.2s"
+                    }}
+                    className="hover:border-[var(--brass)]"
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
+                      <span className="font-mono text-brass" style={{ fontSize: "0.75rem", fontWeight: "bold" }}>
+                        CPA/2019/{item.threadId.slice(0, 4).toUpperCase()}
+                      </span>
+                      <button
+                        onClick={(e) => handleDeleteThread(e, item.threadId)}
+                        style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: "0.8rem" }}
+                        title="Delete Case Thread"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+
+                    <p style={{ margin: "4px 0", color: "var(--ink)", fontSize: "0.85rem", fontWeight: "600", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                      "{item.firstQuestion}"
+                    </p>
+
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px", fontSize: "0.72rem" }} className="font-mono text-muted">
+                      <span>{item.category || "General Dispute"} • {item.turnCount} turns</span>
+                      <span className="text-brass">
+                        {item.latestDecision ? item.latestDecision.split(" ")[0] : "Pending"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main Container */}
       <main style={{ maxWidth: "1280px", margin: "0 auto", padding: "28px 24px 160px 24px" }}>
@@ -297,7 +508,7 @@ export default function Home() {
           </div>
 
           <div className="font-mono text-muted" style={{ fontSize: "0.8rem", textAlign: "right" }}>
-            Corpus: <span className="text-brass">CPA 2019 + Statutory Rules + Supreme Court & NCDRC Precedents</span>
+            User: <span className="text-brass">{user ? `${user.name} (${user.role})` : "Guest"}</span>
           </div>
         </div>
 

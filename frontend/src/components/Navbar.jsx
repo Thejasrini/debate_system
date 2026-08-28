@@ -12,15 +12,21 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/");
   };
 
   const isActive = (path) => location.pathname === path;
 
+  const brandDestination = user
+    ? user.role === "admin"
+      ? "/admin"
+      : "/courtroom"
+    : "/";
+
   return (
     <header className="navbar-header">
       <div className="navbar-container">
-        <Link to="/" className="navbar-brand">
+        <Link to={brandDestination} className="navbar-brand">
           <span className="navbar-logo-text">LexAgent</span>
           <span className="navbar-badge">CPA 2019</span>
         </Link>
@@ -28,6 +34,11 @@ export default function Navbar() {
         <nav className="navbar-nav">
           {user ? (
             <>
+              {user.role === "user" && (
+                <Link to="/courtroom" className={`navbar-link ${isActive("/courtroom") ? "active" : ""}`}>
+                  ⚖️ Courtroom
+                </Link>
+              )}
               <Link to="/new-case" className={`navbar-link ${isActive("/new-case") ? "active" : ""}`}>
                 + New Case
               </Link>
@@ -42,10 +53,10 @@ export default function Navbar() {
               </Link>
               {user.role === "admin" && (
                 <Link to="/admin" className={`navbar-link ${isActive("/admin") ? "active" : ""}`}>
-                  Admin
+                  👑 Admin Portal
                 </Link>
               )}
-              <button onClick={handleLogout} className="navbar-link border-none bg-transparent cursor-pointer">
+              <button onClick={handleLogout} className="navbar-link border-none bg-transparent cursor-pointer hover:text-red-400">
                 Logout
               </button>
             </>
@@ -59,7 +70,7 @@ export default function Navbar() {
               </Link>
               <Link
                 to="/signup"
-                className="px-3 py-1.5 rounded text-xs font-mono font-semibold bg-[var(--brass)] text-[var(--bg)] hover:bg-[var(--brass-hover)] transition"
+                className="px-3 py-1.5 rounded text-xs font-mono font-semibold bg-[var(--brass)] text-[var(--bg)] hover:bg-[var(--brass-hover)] transition shadow"
               >
                 Sign Up
               </Link>

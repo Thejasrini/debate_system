@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -16,46 +16,28 @@ import Profile from "./pages/Profile";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import StyleGuide from "./pages/StyleGuide";
 
-function RootGate() {
-  const { user, accessToken, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span className="font-mono text-brass">Authenticating LexAgent Session...</span>
-      </div>
-    );
-  }
-
-  if (!accessToken || !user) {
-    return <Navigate to="/signup" replace />;
-  }
-
-  if (user.role === "admin") {
-    return <Navigate to="/admin" replace />;
-  }
-
-  return <Home />;
-}
-
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/* Root Route: Directs unauthenticated users to /signup, Admins to /admin, and Users to / */}
-            <Route path="/" element={<RootGate />} />
+            {/* Primary Entry Page on http://localhost:5173/ is Signup & Role Selection */}
+            <Route path="/" element={<Signup />} />
 
-            {/* Auth Routes */}
+            {/* Explicit Auth Routes */}
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
 
-            {/* Information & Design System */}
-            <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/style-guide" element={<StyleGuide />} />
-
-            {/* Protected User Routes */}
+            {/* Main Courtroom Terminal */}
+            <Route
+              path="/courtroom"
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/terminal"
               element={
@@ -64,6 +46,12 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Information & Design System */}
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/style-guide" element={<StyleGuide />} />
+
+            {/* Protected User Routes */}
             <Route
               path="/new-case"
               element={
@@ -116,7 +104,7 @@ function App() {
             />
 
             {/* Fallback Catch-all Route */}
-            <Route path="*" element={<RootGate />} />
+            <Route path="*" element={<Signup />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

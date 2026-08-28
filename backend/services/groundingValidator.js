@@ -63,6 +63,13 @@ export function validateAgentOutput(agentName, output, context = "") {
     })
   );
 
+  const validSections = new Set(
+    verifiedLegislation.map((record) => {
+      const metadata = record.metadata || {};
+      return (metadata.section_or_rule || record.section_or_rule || "").toLowerCase().trim();
+    }).filter(Boolean)
+  );
+
   // 1. Audit Precedents
   const precedentsList = output.supporting_precedents || output.contrary_precedents || output.precedents_considered || [];
   if (Array.isArray(precedentsList)) {
@@ -88,8 +95,13 @@ export function validateAgentOutput(agentName, output, context = "") {
   const sectionsList = output.applicable_sections || [];
   if (Array.isArray(sectionsList)) {
     sectionsList.forEach((s) => {
-      if (s.section && !context.toLowerCase().includes(s.section.toLowerCase()) && !s.section.includes("Section 2") && !s.section.includes("Section 39")) {
-        warnings.push(`Statutory Section '${s.section}' cited by ${agentName} was not directly present in retrieved text chunks.`);
+      if (s.section) {
+        const sectionLower = s.section.toLowerCase().trim();
+        if (!validSections.has(sectionLower)) {
+          citationErrors.push(`Unknown Statutory Section: "${s.section}" not found in normalized statutes.`);
+        } else if (!context.toLowerCase().includes(sectionLower)) {
+          warnings.push(`Statutory Section '${s.section}' cited by ${agentName} was not directly present in retrieved text chunks.`);
+        }
       }
     });
   }

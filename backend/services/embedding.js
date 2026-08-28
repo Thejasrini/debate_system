@@ -21,8 +21,10 @@ const embeddingModel = genAI.getGenerativeModel({
  */
 export async function generateEmbedding(text, maxRetries = 2) {
   if (!text || typeof text !== "string" || !text.trim()) {
-    return new Array(768).fill(0);
+    return fallbackEmbedding(text);
   }
+
+  if (!process.env.GEMINI_API_KEY) return fallbackEmbedding(text);
 
   let attempt = 0;
   while (attempt < maxRetries) {
@@ -38,12 +40,29 @@ export async function generateEmbedding(text, maxRetries = 2) {
 
       if (is429 || attempt >= maxRetries) {
         console.warn(`⚠️ Embedding API quota limit hit. Falling back to zero-vector representation...`);
-        return new Array(768).fill(0);
+        return fallbackEmbedding(text);
       }
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 
-  return new Array(768).fill(0);
+  return fallbackEmbedding(text);
+}
+
+function fallbackEmbedding(text = "") {
+  const vector = new Array(768).fill(0);
+  const tokens = String(text).toLowerCase().match(/[a-z0-9]+/g) || [];
+
+  tokens.forEach((token) => {
+    let hash = 2166136261;
+    for (let index = 0; index < token.length; index++) {
+      hash ^= token.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    const position = Math.abs(hash) % vector.length;
+    vector[position] += 1;
+  });
+
+  return vector;
 }

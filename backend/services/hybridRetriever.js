@@ -68,7 +68,7 @@ export async function retrieveHybridLegalKnowledge(caseRepresentation, rawQuesti
   const statutorySections = vectorSections.map((s) => {
     const semanticScore = s.adjustedScore || s.score || 0.6;
     const isExactSectionMatch = (caseRepresentation.potential_sections || []).some((sec) =>
-      s.metadata.section && s.metadata.section.includes(sec)
+      s.metadata.section && s.metadata.section.toLowerCase().includes(String(sec).toLowerCase())
     );
     const keywordScore = isExactSectionMatch ? 1.0 : 0.6;
     const issueScore = legalIssuesText.toLowerCase().includes((s.metadata.title || "").toLowerCase()) ? 0.9 : 0.5;
@@ -194,6 +194,8 @@ export async function retrieveHybridLegalKnowledge(caseRepresentation, rawQuesti
         const categories = meta.case_category || j.case_category || [];
         const facts = meta.facts || j.facts || "";
 
+        if (j.verified === false || (j.source_verified === false && !j.verified)) return;
+
         const matchesCategory = categories.some((cat) => lowerQuery.includes(cat.toLowerCase()));
         const matchesText =
           lowerQuery.includes(facts.toLowerCase().substring(0, 30)) ||
@@ -261,9 +263,9 @@ export async function retrieveHybridLegalKnowledge(caseRepresentation, rawQuesti
           hfSupplementaryCases.push({
             source_type: isQA ? "SECONDARY_QA" : "SUPPLEMENTARY_CASE_LAW",
             case_id: item.doc_id || item.case_id,
-            case_title: item.title || item.case_title,
+            case_title: item.title || item.metadata?.case_title || item.case_title,
             court: (item.metadata && item.metadata.court) || item.court || "Consumer Forum",
-            date: item.year || item.date || "",
+            date: item.year || item.metadata?.date || item.date || "",
             facts_summary: (item.metadata && item.metadata.facts) || item.facts || "",
             legal_provisions: (item.metadata && item.metadata.legal_provisions) || item.legal_provisions || [],
             judgment: (item.metadata && item.metadata.judgment) || item.judgment || "",

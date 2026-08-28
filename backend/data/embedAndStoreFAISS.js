@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { generateEmbedding } from "../services/embedding.js";
-import { saveFaissIndex } from "../services/faissService.js";
+import { createOrUpdateFaissIndex } from "../services/faissService.js";
 
 const CHUNKS_PATH = path.resolve("./data/normalized/chunks.json");
 
@@ -25,7 +25,9 @@ async function embedAndStoreFAISS() {
 
   for (let i = 0; i < total; i++) {
     const chunk = chunks[i];
-    console.log(`[${i + 1}/${total}] Generating embedding for: ${chunk.chunk_id} (${chunk.metadata.title})`);
+    if (i === 0 || (i + 1) % 100 === 0 || i === total - 1) {
+      console.log(`[${i + 1}/${total}] Generating embeddings...`);
+    }
 
     try {
       const embedding = await generateEmbedding(chunk.text);
@@ -36,21 +38,23 @@ async function embedAndStoreFAISS() {
 
       // Save index to disk after primary statutory/precedent chunks (first 39) are done
       if (i === 39 || (i > 39 && i % 50 === 0)) {
-        await saveFaissIndex(embeddedChunks);
+        await createOrUpdateFaissIndex(embeddedChunks);
         console.log(`💾 Progress Checkpoint: ${embeddedChunks.length} vectors saved to FAISS store.`);
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      if (process.env.GEMINI_API_KEY) {
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      }
     } catch (err) {
       console.warn(`⚠️ Failed to generate embedding for ${chunk.chunk_id}: ${err.message}. Skipping...`);
     }
   }
 
   console.log(`\n💾 Finalizing FAISS vector index with ${embeddedChunks.length} vectors...`);
-  await saveFaissIndex(embeddedChunks);
+  const indexResult = await createOrUpdateFaissIndex(embeddedChunks);
 
   console.log("\n=========================================");
-  console.log(`✅ FAISS INDEXING COMPLETE (${embeddedChunks.length} vectors stored)`);
+  console.log(`✅ FAISS index successfully created at backend/data/faiss_index with ${indexResult.vectors} vectors`);
   console.log("=========================================\n");
 }
 

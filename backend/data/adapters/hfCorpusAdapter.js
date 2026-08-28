@@ -25,9 +25,9 @@ export function loadHFCorpusAndSecondaryQA() {
             const rawText = `${item.case_title || ""} ${item.facts || ""} ${item.issues || ""} ${item.judgment || ""}`.trim();
             if (rawText.length < 80) return; // Filter out short / boilerplate entries
 
-            const caseId = item.case_id || item.id || `hf_item_${idx}`;
+            const caseId = item.case_id || item.id || item.case_title || `hf_item_${idx}`;
             const caseTitle = item.case_title || item.title || "Consumer Legal Case";
-            const docId = `caselaw_hf_${slugify(caseId)}_${slugify(caseTitle).slice(0, 30)}`;
+            const docId = `caselaw_hf_${slugify(caseId)}`;
 
             if (seenIds.has(docId)) return;
             seenIds.add(docId);
@@ -56,8 +56,10 @@ Judgment: ${item.judgment || ""}
               source_url: item.source_url || "",
               year: item.date ? parseInt(item.date) || null : null,
               metadata: {
+                case_title: caseTitle,
                 case_name: caseTitle,
                 court: item.court || "Consumer Forum",
+                date: item.date || "",
                 legal_provisions: Array.isArray(item.legal_provisions) ? item.legal_provisions : [],
                 facts: item.facts || "",
                 judgment: item.judgment || "",

@@ -17,8 +17,12 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await login(email, password);
-      navigate("/dashboard");
+      const loggedUser = await login(email, password);
+      if (loggedUser && loggedUser.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError(err.response?.data?.error || "Invalid login credentials.");
     } finally {
@@ -33,8 +37,8 @@ export default function Login() {
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md p-8 rounded-xl border border-[var(--line)] bg-[var(--surface)] space-y-6 shadow-xl">
           <div className="text-center space-y-2">
-            <h1 className="text-2xl font-serif">Welcome Back</h1>
-            <p className="text-xs font-mono text-[var(--ink-muted)]">Sign in to access your consumer dispute case threads</p>
+            <h1 className="text-2xl font-serif text-[var(--brass)]">Welcome Back</h1>
+            <p className="text-xs font-mono text-[var(--ink-muted)]">Sign in to access your LexAgent portal</p>
           </div>
 
           <ErrorBanner message={error} onClose={() => setError("")} />
@@ -47,7 +51,7 @@ export default function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="advocate@lexagent.in"
+                placeholder="advocate@lexagent.in or admin@lexagent.dev"
                 className="w-full p-3 rounded-lg border border-[var(--line)] bg-[var(--bg)] text-[var(--ink)] text-sm focus:border-[var(--brass)] outline-none"
               />
             </div>
@@ -73,11 +77,16 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="text-center text-xs text-[var(--ink-muted)]">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-[var(--brass)] hover:underline font-mono">
-              Sign up here
-            </Link>
+          <div className="text-center text-xs text-[var(--ink-muted)] space-y-2">
+            <div>
+              Don't have an account?{" "}
+              <Link to="/signup" className="text-[var(--brass)] hover:underline font-mono">
+                Sign up here
+              </Link>
+            </div>
+            <div className="text-[0.7rem] text-[var(--ink-muted)] border-t border-[var(--line)] pt-2 mt-2">
+              💡 Admin credentials: <span className="font-mono text-[var(--brass)]">admin@lexagent.dev</span> / <span className="font-mono text-[var(--brass)]">admin123</span>
+            </div>
           </div>
         </div>
       </div>

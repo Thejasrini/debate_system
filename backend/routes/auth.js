@@ -7,11 +7,11 @@ const router = express.Router();
 
 /**
  * @route POST /api/auth/signup
- * @desc Registers a new user and returns JWT access & refresh tokens
+ * @desc Registers a new user (role: 'user' or 'admin') and returns JWT access & refresh tokens
  */
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -32,10 +32,13 @@ router.post("/signup", async (req, res) => {
       });
     }
 
+    const assignedRole = role === "admin" ? "admin" : "user";
+
     const user = new User({
       name: name.trim(),
       email: email.toLowerCase().trim(),
-      password
+      password,
+      role: assignedRole
     });
 
     await user.save();

@@ -35,8 +35,8 @@ export function AuthProvider({ children }) {
     return res.user;
   };
 
-  const signup = async (name, email, password) => {
-    const res = await signupApi(name, email, password);
+  const signup = async (name, email, password, role = "user") => {
+    const res = await signupApi(name, email, password, role);
     setAccessToken(res.accessToken);
     setRefreshToken(res.refreshToken);
     localStorage.setItem("accessToken", res.accessToken);

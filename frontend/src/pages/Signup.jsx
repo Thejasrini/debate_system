@@ -9,6 +9,7 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("user");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { signup } = useAuth();
@@ -30,8 +31,12 @@ export default function Signup() {
 
     setLoading(true);
     try {
-      await signup(name, email, password);
-      navigate("/dashboard");
+      const createdUser = await signup(name, email, password, role);
+      if (createdUser && createdUser.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError(err.response?.data?.error || "Registration failed. Please try again.");
     } finally {
@@ -46,13 +51,42 @@ export default function Signup() {
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md p-8 rounded-xl border border-[var(--line)] bg-[var(--surface)] space-y-6 shadow-xl">
           <div className="text-center space-y-2">
-            <h1 className="text-2xl font-serif">Create an Account</h1>
+            <h1 className="text-2xl font-serif text-[var(--brass)]">Create an Account</h1>
             <p className="text-xs font-mono text-[var(--ink-muted)]">Register for LexAgent Consumer Protection Platform</p>
           </div>
 
           <ErrorBanner message={error} onClose={() => setError("")} />
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Role Selection Toggle */}
+            <div className="space-y-1">
+              <label className="text-xs font-mono text-[var(--ink-muted)]">Account Role Type</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRole("user")}
+                  className={`p-3 rounded-lg border text-xs font-mono font-semibold transition ${
+                    role === "user"
+                      ? "border-[var(--brass)] bg-[var(--brass-light)] text-[var(--brass)]"
+                      : "border-[var(--line)] bg-[var(--bg)] text-[var(--ink-muted)]"
+                  }`}
+                >
+                  👤 User (Consumer)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("admin")}
+                  className={`p-3 rounded-lg border text-xs font-mono font-semibold transition ${
+                    role === "admin"
+                      ? "border-[var(--brass)] bg-[var(--brass-light)] text-[var(--brass)]"
+                      : "border-[var(--line)] bg-[var(--bg)] text-[var(--ink-muted)]"
+                  }`}
+                >
+                  👑 Admin Portal
+                </button>
+              </div>
+            </div>
+
             <div className="space-y-1">
               <label className="text-xs font-mono text-[var(--ink-muted)]">Full Name</label>
               <input
@@ -106,7 +140,7 @@ export default function Signup() {
               disabled={loading}
               className="w-full py-3 rounded-lg font-mono text-sm font-semibold bg-[var(--brass)] text-[var(--bg)] hover:bg-[var(--brass-hover)] transition disabled:opacity-50"
             >
-              {loading ? "Creating Account..." : "Create Account →"}
+              {loading ? "Creating Account..." : `Create ${role === "admin" ? "Admin" : "User"} Account →`}
             </button>
           </form>
 

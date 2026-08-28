@@ -7,8 +7,8 @@ export async function loginApi(email, password) {
   return res.data;
 }
 
-export async function signupApi(name, email, password) {
-  const res = await axios.post(`${API_BASE}/signup`, { name, email, password });
+export async function signupApi(name, email, password, role = "user") {
+  const res = await axios.post(`${API_BASE}/signup`, { name, email, password, role });
   return res.data;
 }
 

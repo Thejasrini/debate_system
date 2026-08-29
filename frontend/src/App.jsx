@@ -23,9 +23,9 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/* Public Auth & Landing */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
+            {/* Public Auth & Landing — Default Starting Page is /signup */}
+            <Route path="/" element={<Navigate to="/signup" replace />} />
+            <Route path="/login" element={<Navigate to="/signup" replace />} />
             <Route path="/signup" element={<Signup />} />
 
             {/* Main Courtroom Engine Alias Routes */}

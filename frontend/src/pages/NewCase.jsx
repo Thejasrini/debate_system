@@ -42,9 +42,18 @@ export default function NewCase() {
                 rows={5}
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
                 placeholder="Describe your dispute in detail (e.g., 'Defective LED TV screen flickering after 3 days of delivery from online seller, refund denied')..."
                 className="w-full p-4 rounded-lg border border-[var(--line)] bg-[var(--bg)] text-[var(--ink)] text-sm focus:border-[var(--brass)] outline-none leading-relaxed"
               />
+              <div className="font-mono text-xs text-[var(--ink-muted)] opacity-80">
+                💡 Press <strong>Enter</strong> to launch multi-agent debate (<strong>Shift + Enter</strong> for new line)
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

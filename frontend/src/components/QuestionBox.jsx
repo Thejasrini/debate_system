@@ -71,7 +71,17 @@ export default function QuestionBox({ onSubmit, loading, isFollowUp = false }) {
               }
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
             />
+
+            <div className="font-mono text-muted" style={{ fontSize: "0.72rem", marginTop: "4px", opacity: 0.8 }}>
+              💡 <span>Press <strong>Enter</strong> to file & begin debate (<strong>Shift + Enter</strong> for line break)</span>
+            </div>
 
             <div style={{ marginTop: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
               <div className="font-mono text-muted" style={{ fontSize: "0.78rem", display: "flex", alignItems: "center", gap: "6px" }}>

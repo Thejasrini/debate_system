@@ -39,9 +39,6 @@ export default function Navbar() {
                   ⚖️ Courtroom
                 </Link>
               )}
-              <Link to="/new-case" className={`navbar-link ${isActive("/new-case") ? "active" : ""}`} style={{ color: isActive("/new-case") ? "var(--brass)" : "var(--ink-muted)", textDecoration: "none", fontSize: "0.88rem" }}>
-                + New Case
-              </Link>
               <Link to="/dashboard" className={`navbar-link ${isActive("/dashboard") ? "active" : ""}`} style={{ color: isActive("/dashboard") ? "var(--brass)" : "var(--ink-muted)", textDecoration: "none", fontSize: "0.88rem" }}>
                 Dashboard
               </Link>

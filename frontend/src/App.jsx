@@ -92,12 +92,44 @@ function App() {
               }
             />
 
-            {/* Admin Route */}
+            {/* Admin Dedicated Routes */}
             <Route
               path="/admin"
               element={
-                <ProtectedRoute adminOnly>
-                  <AdminAnalytics />
+                <ProtectedRoute>
+                  <AdminAnalytics defaultTab="overview" />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/overview"
+              element={
+                <ProtectedRoute>
+                  <AdminAnalytics defaultTab="overview" />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute>
+                  <AdminAnalytics defaultTab="users" />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/cases"
+              element={
+                <ProtectedRoute>
+                  <AdminAnalytics defaultTab="cases" />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/feedback"
+              element={
+                <ProtectedRoute>
+                  <AdminAnalytics defaultTab="feedback" />
                 </ProtectedRoute>
               }
             />

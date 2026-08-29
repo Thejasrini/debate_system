@@ -243,7 +243,7 @@ export default function Navbar() {
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", paddingBottom: "14px" }}>
               <h3 className="font-serif text-brass" style={{ margin: 0, fontSize: "1.1rem" }}>
-                ⚖️ Courtroom Menu
+                {location.pathname.startsWith("/admin") ? "👑 Admin Control Menu" : "⚖️ Courtroom Menu"}
               </h3>
               <button
                 onClick={() => setIsNavDrawerOpen(false)}
@@ -254,46 +254,92 @@ export default function Navbar() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <button
-                onClick={() => { setIsNavDrawerOpen(false); navigate("/courtroom"); }}
-                className="btn-outline-brass font-mono"
-                style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
-              >
-                <span>⚖️</span> Courtroom Terminal
-              </button>
+              {location.pathname.startsWith("/admin") ? (
+                <>
+                  <button
+                    onClick={() => { setIsNavDrawerOpen(false); navigate("/admin/overview"); }}
+                    className="btn-outline-brass font-mono"
+                    style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+                  >
+                    <span>📊</span> Overview & System Charts
+                  </button>
 
-              <button
-                onClick={() => { setIsNavDrawerOpen(false); navigate("/dashboard"); }}
-                className="btn-outline-brass font-mono"
-                style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
-              >
-                <span>📊</span> Case Dashboard
-              </button>
+                  <button
+                    onClick={() => { setIsNavDrawerOpen(false); navigate("/admin/users"); }}
+                    className="btn-outline-brass font-mono"
+                    style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+                  >
+                    <span>👥</span> Registered User Accounts
+                  </button>
 
-              <button
-                onClick={() => { setIsNavDrawerOpen(false); navigate("/profile"); }}
-                className="btn-outline-brass font-mono"
-                style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
-              >
-                <span>👤</span> Account Profile
-              </button>
+                  <button
+                    onClick={() => { setIsNavDrawerOpen(false); navigate("/admin/cases"); }}
+                    className="btn-outline-brass font-mono"
+                    style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+                  >
+                    <span>📜</span> User Cases & Disputes Log
+                  </button>
 
-              <button
-                onClick={() => { setIsNavDrawerOpen(false); navigate("/about-us"); }}
-                className="btn-outline-brass font-mono"
-                style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
-              >
-                <span>ℹ️</span> About Us
-              </button>
+                  <button
+                    onClick={() => { setIsNavDrawerOpen(false); navigate("/admin/feedback"); }}
+                    className="btn-outline-brass font-mono"
+                    style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+                  >
+                    <span>💬</span> User Feedback Log
+                  </button>
 
-              {user?.role === "admin" && (
-                <button
-                  onClick={() => { setIsNavDrawerOpen(false); navigate("/admin"); }}
-                  className="btn-outline-brass font-mono"
-                  style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
-                >
-                  <span>👑</span> Admin Analytics
-                </button>
+                  <div style={{ borderTop: "1px solid var(--line)", margin: "8px 0" }} />
+
+                  <button
+                    onClick={() => { setIsNavDrawerOpen(false); navigate("/courtroom"); }}
+                    className="btn-outline-brass font-mono"
+                    style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+                  >
+                    <span>⚖️</span> Exit to Courtroom Terminal
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => { setIsNavDrawerOpen(false); navigate("/courtroom"); }}
+                    className="btn-outline-brass font-mono"
+                    style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+                  >
+                    <span>⚖️</span> Courtroom Terminal
+                  </button>
+
+                  <button
+                    onClick={() => { setIsNavDrawerOpen(false); navigate("/dashboard"); }}
+                    className="btn-outline-brass font-mono"
+                    style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+                  >
+                    <span>📊</span> Case Dashboard
+                  </button>
+
+                  <button
+                    onClick={() => { setIsNavDrawerOpen(false); navigate("/profile"); }}
+                    className="btn-outline-brass font-mono"
+                    style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+                  >
+                    <span>👤</span> Account Profile
+                  </button>
+
+                  <button
+                    onClick={() => { setIsNavDrawerOpen(false); navigate("/about-us"); }}
+                    className="btn-outline-brass font-mono"
+                    style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+                  >
+                    <span>ℹ️</span> About Us
+                  </button>
+
+                  <button
+                    onClick={() => { setIsNavDrawerOpen(false); navigate("/admin"); }}
+                    className="btn-outline-brass font-mono"
+                    style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+                  >
+                    <span>👑</span> Admin Analytics
+                  </button>
+                </>
               )}
             </div>
           </div>

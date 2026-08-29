@@ -155,31 +155,7 @@ export default function AdminAnalytics({ defaultTab }) {
             </p>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-            <span className="font-mono text-muted" style={{ fontSize: "0.78rem" }}>
-              Auto-refreshed: {lastUpdated.toLocaleTimeString()}
-            </span>
-            <button
-              onClick={fetchAllStats}
-              className="font-mono"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "10px 18px",
-                borderRadius: "8px",
-                backgroundColor: "var(--brass-light)",
-                color: "var(--brass)",
-                border: "1px solid var(--line-bright)",
-                fontSize: "0.82rem",
-                fontWeight: "bold",
-                cursor: "pointer",
-                transition: "all 0.2s ease"
-              }}
-            >
-              🔄 Refresh Data
-            </button>
-          </div>
+
         </div>
 
 

@@ -193,26 +193,19 @@ export default function Profile() {
             {loadingStats ? (
               <LoadingSpinner message="Calculating user metrics..." />
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", textAlign: "center" }}>
-                <div style={{ padding: "16px 8px", borderRadius: "10px", backgroundColor: "var(--bg)", border: "1px solid var(--line)" }}>
-                  <div className="font-serif text-brass" style={{ fontSize: "1.8rem", fontWeight: "bold" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", textAlign: "center" }}>
+                <div style={{ padding: "20px 12px", borderRadius: "10px", backgroundColor: "var(--bg)", border: "1px solid var(--line)" }}>
+                  <div className="font-serif text-brass" style={{ fontSize: "2rem", fontWeight: "bold" }}>
                     {stats?.totalCases || 0}
                   </div>
-                  <p className="font-mono text-muted" style={{ fontSize: "0.72rem", margin: "4px 0 0 0" }}>Total Cases</p>
+                  <p className="font-mono text-muted" style={{ fontSize: "0.75rem", margin: "6px 0 0 0" }}>Total Cases</p>
                 </div>
 
-                <div style={{ padding: "16px 8px", borderRadius: "10px", backgroundColor: "var(--bg)", border: "1px solid var(--line)" }}>
-                  <div className="font-serif text-brass" style={{ fontSize: "1.8rem", fontWeight: "bold" }}>
+                <div style={{ padding: "20px 12px", borderRadius: "10px", backgroundColor: "var(--bg)", border: "1px solid var(--line)" }}>
+                  <div className="font-serif text-brass" style={{ fontSize: "2rem", fontWeight: "bold" }}>
                     {stats?.totalTurns || 0}
                   </div>
-                  <p className="font-mono text-muted" style={{ fontSize: "0.72rem", margin: "4px 0 0 0" }}>Debate Turns</p>
-                </div>
-
-                <div style={{ padding: "16px 8px", borderRadius: "10px", backgroundColor: "var(--bg)", border: "1px solid var(--line)" }}>
-                  <div className="font-serif" style={{ fontSize: "1.8rem", fontWeight: "bold", color: "var(--support-green-bright)" }}>
-                    {stats?.averageConfidence || 0}%
-                  </div>
-                  <p className="font-mono text-muted" style={{ fontSize: "0.72rem", margin: "4px 0 0 0" }}>Avg Confidence</p>
+                  <p className="font-mono text-muted" style={{ fontSize: "0.75rem", margin: "6px 0 0 0" }}>Debate Turns</p>
                 </div>
               </div>
             )}

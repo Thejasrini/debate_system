@@ -641,7 +641,7 @@ export default function Home() {
             )}
 
             {/* Debate Analysis Bar Chart (Support -> Oppose -> Judge Pipeline) */}
-            <DebateAnalysisGraph supportData={support} opposeData={oppose} judgeData={judge} loading={isDebating} />
+            <DebateAnalysisGraph supportData={support} opposeData={oppose} judgeData={judge} loading={isAnalyzing} />
 
             {/* Dual Counsel Arguments */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>

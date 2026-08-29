@@ -3,13 +3,43 @@ import React from "react";
 export default function ErrorBanner({ message, onClose }) {
   if (!message) return null;
   return (
-    <div className="w-full p-4 mb-4 rounded-lg border border-[var(--oppose-oxblood)] bg-[var(--oppose-bg)] flex items-center justify-between">
-      <div className="flex items-center space-x-3 text-[var(--oppose-oxblood-bright)]">
-        <span className="font-bold">⚠️ Error:</span>
-        <span className="text-sm font-sans">{message}</span>
+    <div
+      style={{
+        width: "100%",
+        padding: "10px 14px",
+        borderRadius: "8px",
+        border: "1px solid rgba(239, 68, 68, 0.4)",
+        backgroundColor: "rgba(239, 68, 68, 0.1)",
+        color: "#f87171",
+        fontSize: "0.85rem",
+        fontFamily: "var(--font-sans)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "10px",
+        marginTop: "8px",
+        marginBottom: "8px",
+        boxSizing: "border-box"
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        <span style={{ fontWeight: "bold" }}>⚠️ Error:</span>
+        <span>{message}</span>
       </div>
       {onClose && (
-        <button onClick={onClose} className="text-xs font-mono text-[var(--oppose-oxblood-bright)] hover:underline">
+        <button
+          onClick={onClose}
+          style={{
+            background: "none",
+            border: "none",
+            color: "#f87171",
+            cursor: "pointer",
+            fontSize: "0.82rem",
+            fontFamily: "var(--font-mono)",
+            padding: 0
+          }}
+          title="Dismiss Error Message"
+        >
           Dismiss ✕
         </button>
       )}

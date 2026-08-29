@@ -249,8 +249,6 @@ export default function Signup() {
               </button>
             </div>
 
-            <ErrorBanner message={error} onClose={() => setError("")} />
-
             {/* Step 2: Form Input */}
             <form onSubmit={handleAuth} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {!isLoginMode && (
@@ -352,6 +350,8 @@ export default function Signup() {
                   />
                 </div>
               )}
+
+              <ErrorBanner message={error} onClose={() => setError("")} />
 
               <button
                 type="submit"

@@ -57,8 +57,6 @@ export default function Login() {
             </p>
           </div>
 
-          <ErrorBanner message={error} onClose={() => setError("")} />
-
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div>
               <label className="font-mono text-muted" style={{ display: "block", fontSize: "0.78rem", marginBottom: "6px" }}>
@@ -107,6 +105,8 @@ export default function Login() {
                 }}
               />
             </div>
+
+            <ErrorBanner message={error} onClose={() => setError("")} />
 
             <button
               type="submit"

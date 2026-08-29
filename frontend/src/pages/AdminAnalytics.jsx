@@ -96,12 +96,9 @@ export default function AdminAnalytics() {
 
   const PIE_COLORS = ["#C9A45E", "#4E9078", "#B25A50", "#1B2E47", "#5DA888"];
 
-  const displayTotalCases = overview?.totalCases || casesList.length || 46;
-  const displayTotalUsers = overview?.totalUsers || usersList.length || 6;
-  const displayTotalTurns = overview?.totalTurns || 52;
-  const displayAvgConfidence = 88.4;
-  const displayHallucinations = overview?.hallucinationsCaught || 42;
-  const displayFeedbackApproval = overview?.feedbackApproval || 100;
+  const displayTotalCases = overview?.totalCases ?? casesList.length;
+  const displayTotalUsers = overview?.totalUsers ?? usersList.length;
+  const displayTotalTurns = overview?.totalTurns ?? 0;
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", color: "var(--ink)", display: "flex", flexDirection: "column" }}>

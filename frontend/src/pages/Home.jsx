@@ -48,6 +48,7 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [downloading, setDownloading] = useState(false);
   const [showGraph, setShowGraph] = useState(false);
+  const [isNavDrawerOpen, setIsNavDrawerOpen] = useState(false);
 
   const [feedbackRating, setFeedbackRating] = useState(null);
   const [feedbackComment, setFeedbackComment] = useState("");
@@ -349,8 +350,18 @@ export default function Home() {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)" }}>
       {/* Top Header Bar */}
-      <header className="docket-topbar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", width: "100%", maxWidth: "100vw", boxSizing: "border-box", overflowX: "hidden" }}>
+      <header className="docket-topbar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", width: "100%", maxWidth: "100vw", boxSizing: "border-box" }}>
         <div className="docket-title-group" style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+          {/* Menu Toggle Icon Button */}
+          <button
+            onClick={() => setIsNavDrawerOpen(!isNavDrawerOpen)}
+            className="btn-outline-brass"
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 12px", cursor: "pointer", flexShrink: 0 }}
+            title="Toggle Navigation Menu"
+          >
+            {isNavDrawerOpen ? "✕ Close" : "☰ Menu"}
+          </button>
+
           <h1 className="font-serif text-brass" style={{ fontSize: "1.05rem", margin: 0, letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
             ⚖️ LEXAGENT COURTROOM
           </h1>
@@ -358,18 +369,8 @@ export default function Home() {
           <div style={{ whiteSpace: "nowrap", flexShrink: 0 }}>{getStatusPill()}</div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", flexShrink: 1 }}>
-          {/* History Feature Button */}
-          <button className="btn-outline-brass" onClick={handleOpenHistory} title="View Previous Case History" style={{ flexShrink: 0 }}>
-            📜 Case History
-          </button>
-
-          {threadId && (
-            <button className="btn-outline-brass" onClick={handleStartNewCase} style={{ flexShrink: 0 }}>
-              ➕ New Case
-            </button>
-          )}
-
+        {/* Right Group - Single horizontal line */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", whiteSpace: "nowrap", flexShrink: 0 }}>
           <span className="font-mono text-muted" style={{ fontSize: "0.75rem", opacity: 0.85, flexShrink: 0 }}>
             {currentTime}
           </span>
@@ -389,6 +390,116 @@ export default function Home() {
           </button>
         </div>
       </header>
+
+      {/* LEFT NAVIGATION SIDE DRAWER */}
+      {isNavDrawerOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.65)",
+            backdropFilter: "blur(6px)",
+            zIndex: 9998,
+            display: "flex",
+            justifyContent: "flex-start"
+          }}
+          onClick={() => setIsNavDrawerOpen(false)}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "320px",
+              height: "100%",
+              backgroundColor: "var(--surface)",
+              borderRight: "1px solid var(--line-bright)",
+              padding: "24px",
+              boxShadow: "10px 0 30px rgba(0,0,0,0.5)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px"
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", paddingBottom: "14px" }}>
+              <h3 className="font-serif text-brass" style={{ margin: 0, fontSize: "1.1rem" }}>
+                ⚖️ Courtroom Menu
+              </h3>
+              <button
+                onClick={() => setIsNavDrawerOpen(false)}
+                style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: "1.2rem", cursor: "pointer" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {/* Case History Option */}
+              <button
+                onClick={() => {
+                  setIsNavDrawerOpen(false);
+                  handleOpenHistory();
+                }}
+                className="btn-outline-brass"
+                style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+              >
+                <span>📜</span> Case History
+              </button>
+
+              {/* New Case Option */}
+              <button
+                onClick={() => {
+                  setIsNavDrawerOpen(false);
+                  handleStartNewCase();
+                }}
+                className="btn-outline-brass"
+                style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+              >
+                <span>➕</span> New Case
+              </button>
+
+              <hr className="hairline-divider" style={{ margin: "10px 0" }} />
+
+              {/* Navigation Links */}
+              <button
+                onClick={() => { setIsNavDrawerOpen(false); navigate("/dashboard"); }}
+                className="btn-outline-brass"
+                style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+              >
+                <span>📊</span> Case Dashboard
+              </button>
+
+              <button
+                onClick={() => { setIsNavDrawerOpen(false); navigate("/how-it-works"); }}
+                className="btn-outline-brass"
+                style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+              >
+                <span>💡</span> How It Works
+              </button>
+
+              <button
+                onClick={() => { setIsNavDrawerOpen(false); navigate("/profile"); }}
+                className="btn-outline-brass"
+                style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+              >
+                <span>👤</span> Account Profile
+              </button>
+
+              {user?.role === "admin" && (
+                <button
+                  onClick={() => { setIsNavDrawerOpen(false); navigate("/admin"); }}
+                  className="btn-outline-brass"
+                  style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+                >
+                  <span>👑</span> Admin Analytics
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* HISTORY MODAL SIDEBAR / OVERLAY */}
       {showHistoryModal && (

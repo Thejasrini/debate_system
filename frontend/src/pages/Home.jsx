@@ -349,16 +349,16 @@ export default function Home() {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)" }}>
       {/* Top Header Bar */}
-      <header className="docket-topbar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "20px", width: "100%", boxSizing: "border-box" }}>
-        <div className="docket-title-group" style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
-          <h1 className="font-serif text-brass" style={{ fontSize: "1.1rem", margin: 0, letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
+      <header className="docket-topbar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", width: "100%", maxWidth: "100vw", boxSizing: "border-box", overflowX: "hidden" }}>
+        <div className="docket-title-group" style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+          <h1 className="font-serif text-brass" style={{ fontSize: "1.05rem", margin: 0, letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
             ⚖️ LEXAGENT COURTROOM
           </h1>
-          <span className="docket-number" style={{ whiteSpace: "nowrap", flexShrink: 0 }}>{caseNumber}</span>
+          <span className="docket-number" style={{ whiteSpace: "nowrap", flexShrink: 0, fontSize: "0.75rem" }}>{caseNumber}</span>
           <div style={{ whiteSpace: "nowrap", flexShrink: 0 }}>{getStatusPill()}</div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", whiteSpace: "nowrap", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", flexShrink: 1 }}>
           {/* History Feature Button */}
           <button className="btn-outline-brass" onClick={handleOpenHistory} title="View Previous Case History" style={{ flexShrink: 0 }}>
             📜 Case History
@@ -385,7 +385,7 @@ export default function Home() {
             title="Sign Out of Session"
             style={{ display: "inline-flex", alignItems: "center", gap: "4px", flexShrink: 0 }}
           >
-            🚪 Logout ({user ? user.name.split(" ")[0] : "User"})
+            🚪 Logout
           </button>
         </div>
       </header>

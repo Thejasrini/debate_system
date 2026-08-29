@@ -110,6 +110,11 @@
   --border-hairline: var(--line);
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 /* Base Body & Reset */
 body {
   margin: 0;

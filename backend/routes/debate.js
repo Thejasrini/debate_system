@@ -3,10 +3,11 @@ import crypto from "crypto";
 import { runDebate } from "../services/orchestrator.js";
 import { getThread, saveTurn } from "../services/threadService.js";
 import { optionalProtect } from "../middleware/authMiddleware.js";
+import { debateRateLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
 
-router.post("/", optionalProtect, async (req, res) => {
+router.post("/", optionalProtect, debateRateLimiter, async (req, res) => {
   try {
     const { question, threadId: reqThreadId } = req.body;
 

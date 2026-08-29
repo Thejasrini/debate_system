@@ -15,6 +15,7 @@ import HowItWorks from "./pages/HowItWorks";
 import Profile from "./pages/Profile";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import StyleGuide from "./pages/StyleGuide";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -104,7 +105,7 @@ function App() {
             />
 
             {/* Fallback Catch-all Route */}
-            <Route path="*" element={<Signup />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

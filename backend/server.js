@@ -7,11 +7,15 @@ import historyRoute from "./routes/history.js";
 import feedbackRoute from "./routes/feedback.js";
 import exportRoute from "./routes/export.js";
 import adminRoute from "./routes/admin.js";
+import { globalRateLimiter } from "./middleware/rateLimiter.js";
 import { connectDB } from "./config/db.js";
 
 dotenv.config();
 
 const app = express();
+
+// Apply Global API Rate Limiter
+app.use(globalRateLimiter);
 
 // Enable CORS globally for all origins, methods, and headers
 app.use(cors({

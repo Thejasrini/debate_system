@@ -2,6 +2,7 @@ import express from "express";
 import { User } from "../models/User.js";
 import { generateAccessToken, generateRefreshToken, verifyToken } from "../utils/jwt.js";
 import { protect } from "../middleware/authMiddleware.js";
+import { authRateLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ const router = express.Router();
  * @route POST /api/auth/signup
  * @desc Registers a new user (role: 'user' or 'admin') and returns JWT access & refresh tokens
  */
-router.post("/signup", async (req, res) => {
+router.post("/signup", authRateLimiter, async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
@@ -67,7 +68,7 @@ router.post("/signup", async (req, res) => {
  * @route POST /api/auth/login
  * @desc Authenticates user credentials and returns JWT tokens
  */
-router.post("/login", async (req, res) => {
+router.post("/login", authRateLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 

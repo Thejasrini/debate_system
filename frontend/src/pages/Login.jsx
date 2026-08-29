@@ -21,7 +21,7 @@ export default function Login() {
       if (loggedUser && loggedUser.role === "admin") {
         navigate("/admin");
       } else {
-        navigate("/");
+        navigate("/courtroom");
       }
     } catch (err) {
       setError(err.response?.data?.error || "Invalid login credentials.");
@@ -31,65 +31,128 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--ink)" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", color: "var(--ink)", display: "flex", flexDirection: "column" }}>
       <Navbar />
 
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-md p-8 rounded-xl border border-[var(--line)] bg-[var(--surface)] space-y-6 shadow-xl">
-          <div className="text-center space-y-2">
-            <h1 className="text-2xl font-serif text-[var(--brass)]">Welcome Back</h1>
-            <p className="text-xs font-mono text-[var(--ink-muted)]">Sign in to access your LexAgent portal</p>
+      <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "440px",
+            padding: "32px",
+            borderRadius: "16px",
+            border: "1px solid var(--line)",
+            borderTop: "4px solid var(--brass)",
+            backgroundColor: "var(--surface)",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
+            boxSizing: "border-box"
+          }}
+        >
+          <div style={{ textAlign: "center", marginBottom: "24px" }}>
+            <h1 className="font-serif text-brass" style={{ fontSize: "1.8rem", margin: "0 0 6px 0", letterSpacing: "0.5px" }}>
+              Welcome Back
+            </h1>
+            <p className="font-mono text-muted" style={{ fontSize: "0.82rem", margin: 0 }}>
+              Sign in to access your LexAgent courtroom portal
+            </p>
           </div>
 
           <ErrorBanner message={error} onClose={() => setError("")} />
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-xs font-mono text-[var(--ink-muted)]">Email Address</label>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div>
+              <label className="font-mono text-muted" style={{ display: "block", fontSize: "0.78rem", marginBottom: "6px" }}>
+                Email Address
+              </label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="advocate@lexagent.in or admin@lexagent.dev"
-                className="w-full p-3 rounded-lg border border-[var(--line)] bg-[var(--bg)] text-[var(--ink)] text-sm focus:border-[var(--brass)] outline-none"
+                style={{
+                  width: "100%",
+                  padding: "12px 14px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--line)",
+                  backgroundColor: "var(--bg)",
+                  color: "var(--ink)",
+                  fontSize: "0.95rem",
+                  boxSizing: "border-box",
+                  outline: "none"
+                }}
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-mono text-[var(--ink-muted)]">Password</label>
+            <div>
+              <label className="font-mono text-muted" style={{ display: "block", fontSize: "0.78rem", marginBottom: "6px" }}>
+                Password
+              </label>
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full p-3 rounded-lg border border-[var(--line)] bg-[var(--bg)] text-[var(--ink)] text-sm focus:border-[var(--brass)] outline-none"
+                style={{
+                  width: "100%",
+                  padding: "12px 14px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--line)",
+                  backgroundColor: "var(--bg)",
+                  color: "var(--ink)",
+                  fontSize: "0.95rem",
+                  boxSizing: "border-box",
+                  outline: "none"
+                }}
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-lg font-mono text-sm font-semibold bg-[var(--brass)] text-[var(--bg)] hover:bg-[var(--brass-hover)] transition disabled:opacity-50"
+              className="btn-brass"
+              style={{
+                width: "100%",
+                padding: "14px",
+                fontSize: "0.95rem",
+                marginTop: "8px",
+                boxShadow: "0 4px 14px rgba(201, 164, 94, 0.3)"
+              }}
             >
               {loading ? "Signing In..." : "Sign In →"}
             </button>
           </form>
 
-          <div className="text-center text-xs text-[var(--ink-muted)] space-y-2">
+          <div style={{ textAlign: "center", fontSize: "0.8rem", color: "var(--ink-muted)", marginTop: "24px", paddingTop: "16px", borderTop: "1px solid var(--line)" }}>
             <div>
               Don't have an account?{" "}
-              <Link to="/signup" className="text-[var(--brass)] hover:underline font-mono">
+              <Link to="/signup" className="font-mono text-brass" style={{ fontWeight: "bold", textDecoration: "underline" }}>
                 Sign up here
               </Link>
             </div>
-            <div className="text-[0.7rem] text-[var(--ink-muted)] border-t border-[var(--line)] pt-2 mt-2">
-              💡 Admin credentials: <span className="font-mono text-[var(--brass)]">admin@lexagent.dev</span> / <span className="font-mono text-[var(--brass)]">admin123</span>
+
+            <div
+              className="font-mono"
+              style={{
+                marginTop: "16px",
+                padding: "10px",
+                borderRadius: "6px",
+                backgroundColor: "var(--bg)",
+                border: "1px solid var(--line)",
+                fontSize: "0.72rem",
+                color: "var(--ink-muted)"
+              }}
+            >
+              💡 Default Admin Login: <span className="text-brass" style={{ fontWeight: "bold" }}>admin@lexagent.dev</span> / <span className="text-brass" style={{ fontWeight: "bold" }}>admin123</span>
             </div>
           </div>
         </div>
-      </div>
+      </main>
+
+      <footer className="font-mono text-muted" style={{ padding: "20px", borderTop: "1px solid var(--line)", textAlign: "center", fontSize: "0.75rem" }}>
+        LexAgent — Consumer Protection Act 2019 Legal Intelligence Platform © 2026
+      </footer>
     </div>
   );
 }

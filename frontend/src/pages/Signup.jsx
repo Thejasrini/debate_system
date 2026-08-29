@@ -53,114 +53,215 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--ink)" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", color: "var(--ink)", display: "flex", flexDirection: "column" }}>
       <Navbar />
 
-      <main className="flex-1 flex flex-col items-center justify-center p-6 max-w-4xl mx-auto w-full">
+      <main style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", maxWidth: "900px", margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
         {/* Header Branding */}
-        <div className="text-center space-y-3 mb-8">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-[var(--line-bright)] bg-[var(--brass-light)] text-[var(--brass)] text-xs font-mono">
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <div
+            className="font-mono"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "4px 14px",
+              borderRadius: "20px",
+              border: "1px solid var(--line-bright)",
+              backgroundColor: "var(--brass-light)",
+              color: "var(--brass)",
+              fontSize: "0.78rem",
+              marginBottom: "16px"
+            }}
+          >
             <span>⚖️ Consumer Protection Act, 2019 Platform</span>
           </div>
-          <h1 className="text-3xl md:text-5xl font-serif text-[var(--brass)]">
-            Welcome to <span className="underline decoration-[var(--line-bright)]">LexAgent</span>
+
+          <h1 className="font-serif text-brass" style={{ fontSize: "2.5rem", margin: "0 0 10px 0", letterSpacing: "0.5px" }}>
+            Welcome to <span style={{ textDecoration: "underline", textDecorationColor: "var(--line-bright)" }}>LexAgent</span>
           </h1>
-          <p className="text-sm md:text-base text-[var(--ink-muted)] font-mono max-w-xl mx-auto">
-            Select your role to register or log in to the adversarial legal intelligence platform.
+
+          <p className="font-mono text-muted" style={{ fontSize: "0.9rem", margin: 0, maxWidth: "560px" }}>
+            Select your access role to register or log in to the adversarial legal intelligence platform.
           </p>
         </div>
 
-        {/* If user is already logged in, show current session status */}
+        {/* If user is already logged in */}
         {user ? (
-          <div className="w-full max-w-md p-6 rounded-xl border border-[var(--brass)] bg-[var(--surface)] text-center space-y-4 shadow-2xl">
-            <div className="p-3 rounded-full bg-[var(--brass-light)] text-[var(--brass)] text-2xl w-12 h-12 mx-auto flex items-center justify-center">
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "460px",
+              padding: "32px",
+              borderRadius: "16px",
+              border: "2px solid var(--brass)",
+              backgroundColor: "var(--surface)",
+              textAlign: "center",
+              boxShadow: "0 12px 36px rgba(0,0,0,0.3)"
+            }}
+          >
+            <div
+              style={{
+                width: "56px",
+                height: "56px",
+                borderRadius: "50%",
+                backgroundColor: "var(--brass-light)",
+                color: "var(--brass)",
+                fontSize: "1.8rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 16px auto"
+              }}
+            >
               {user.role === "admin" ? "👑" : "👤"}
             </div>
-            <div>
-              <h2 className="text-lg font-serif font-bold">{user.name}</h2>
-              <p className="text-xs font-mono text-[var(--ink-muted)]">{user.email}</p>
-              <span className="inline-block mt-2 px-3 py-0.5 rounded text-xs font-mono font-bold uppercase bg-[var(--brass-light)] text-[var(--brass)]">
-                Role: {user.role}
-              </span>
-            </div>
-            <div className="pt-2 flex flex-col gap-2">
+            <h2 className="font-serif" style={{ fontSize: "1.4rem", margin: "0 0 4px 0", color: "var(--ink)" }}>{user.name}</h2>
+            <p className="font-mono text-muted" style={{ fontSize: "0.82rem", margin: "0 0 12px 0" }}>{user.email}</p>
+            <span
+              className="font-mono"
+              style={{
+                display: "inline-block",
+                padding: "3px 12px",
+                borderRadius: "4px",
+                fontSize: "0.75rem",
+                fontWeight: "bold",
+                textTransform: "uppercase",
+                backgroundColor: "var(--brass-light)",
+                color: "var(--brass)",
+                border: "1px solid var(--line-bright)"
+              }}
+            >
+              Role: {user.role}
+            </span>
+
+            <div style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "12px" }}>
               <button
                 onClick={() => navigate(user.role === "admin" ? "/admin" : "/courtroom")}
-                className="w-full py-3 rounded-lg font-mono text-sm font-semibold bg-[var(--brass)] text-[var(--bg)] hover:bg-[var(--brass-hover)] transition"
+                className="btn-brass"
+                style={{ width: "100%", padding: "14px", fontSize: "0.95rem" }}
               >
                 Go to {user.role === "admin" ? "Admin Dashboard 📊" : "Main Courtroom Terminal ⚖️"}
               </button>
               <button
                 onClick={logout}
-                className="w-full py-2.5 rounded-lg font-mono text-xs text-[var(--ink-muted)] border border-[var(--line)] hover:border-red-500 hover:text-red-500 transition"
+                className="btn-outline-brass"
+                style={{ width: "100%", padding: "12px", fontSize: "0.85rem" }}
               >
                 Sign Out & Switch Account
               </button>
             </div>
           </div>
         ) : (
-          <div className="w-full max-w-lg p-8 rounded-xl border border-[var(--line)] bg-[var(--surface)] space-y-6 shadow-2xl">
+          /* Main Auth Form Card */
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "520px",
+              padding: "32px",
+              borderRadius: "16px",
+              border: "1px solid var(--line)",
+              borderTop: "4px solid var(--brass)",
+              backgroundColor: "var(--surface)",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
+              boxSizing: "border-box"
+            }}
+          >
             {/* Step 1: Role Selection Cards */}
-            <div className="space-y-2">
-              <label className="text-xs font-mono text-[var(--brass)] font-semibold uppercase tracking-wider block">
+            <div style={{ marginBottom: "24px" }}>
+              <label
+                className="font-mono text-brass"
+                style={{ display: "block", fontSize: "0.78rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "10px" }}
+              >
                 Step 1: Select Your Access Role
               </label>
-              <div className="grid grid-cols-2 gap-3">
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                {/* User Role Button */}
                 <button
                   type="button"
                   onClick={() => setRole("user")}
-                  className={`p-4 rounded-xl border text-left transition flex flex-col justify-between space-y-2 ${
-                    role === "user"
-                      ? "border-[var(--brass)] bg-[var(--brass-light)] text-[var(--brass)] shadow-md"
-                      : "border-[var(--line)] bg-[var(--bg)] text-[var(--ink-muted)] hover:border-[var(--line-bright)]"
-                  }`}
+                  style={{
+                    padding: "16px",
+                    borderRadius: "12px",
+                    border: role === "user" ? "2px solid var(--brass)" : "1px solid var(--line)",
+                    backgroundColor: role === "user" ? "var(--brass-light)" : "var(--bg)",
+                    color: role === "user" ? "var(--brass)" : "var(--ink-muted)",
+                    textAlign: "left",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease"
+                  }}
                 >
-                  <span className="text-2xl">👤</span>
-                  <div>
-                    <div className="font-serif font-bold text-sm">User</div>
-                    <div className="text-[0.7rem] font-mono opacity-80">Consumer / Advocate Dispute Filing</div>
+                  <div style={{ fontSize: "1.6rem", marginBottom: "6px" }}>👤</div>
+                  <div className="font-serif" style={{ fontSize: "0.95rem", fontWeight: "bold", color: role === "user" ? "var(--brass)" : "var(--ink)" }}>
+                    User
+                  </div>
+                  <div className="font-mono" style={{ fontSize: "0.7rem", opacity: 0.8, marginTop: "2px" }}>
+                    Consumer / Advocate Dispute Filing
                   </div>
                 </button>
 
+                {/* Admin Role Button */}
                 <button
                   type="button"
                   onClick={() => setRole("admin")}
-                  className={`p-4 rounded-xl border text-left transition flex flex-col justify-between space-y-2 ${
-                    role === "admin"
-                      ? "border-[var(--brass)] bg-[var(--brass-light)] text-[var(--brass)] shadow-md"
-                      : "border-[var(--line)] bg-[var(--bg)] text-[var(--ink-muted)] hover:border-[var(--line-bright)]"
-                  }`}
+                  style={{
+                    padding: "16px",
+                    borderRadius: "12px",
+                    border: role === "admin" ? "2px solid var(--brass)" : "1px solid var(--line)",
+                    backgroundColor: role === "admin" ? "var(--brass-light)" : "var(--bg)",
+                    color: role === "admin" ? "var(--brass)" : "var(--ink-muted)",
+                    textAlign: "left",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease"
+                  }}
                 >
-                  <span className="text-2xl">👑</span>
-                  <div>
-                    <div className="font-serif font-bold text-sm">Admin</div>
-                    <div className="text-[0.7rem] font-mono opacity-80">Commission Analytics Portal</div>
+                  <div style={{ fontSize: "1.6rem", marginBottom: "6px" }}>👑</div>
+                  <div className="font-serif" style={{ fontSize: "0.95rem", fontWeight: "bold", color: role === "admin" ? "var(--brass)" : "var(--ink)" }}>
+                    Admin
+                  </div>
+                  <div className="font-mono" style={{ fontSize: "0.7rem", opacity: 0.8, marginTop: "2px" }}>
+                    Commission Analytics Portal
                   </div>
                 </button>
               </div>
             </div>
 
             {/* Mode Switcher Tabs */}
-            <div className="flex border-b border-[var(--line)] pt-2">
+            <div style={{ display: "flex", borderBottom: "1px solid var(--line)", marginBottom: "20px" }}>
               <button
                 type="button"
                 onClick={() => { setIsLoginMode(false); setError(""); }}
-                className={`flex-1 py-2 font-mono text-xs font-semibold border-b-2 transition ${
-                  !isLoginMode
-                    ? "border-[var(--brass)] text-[var(--brass)]"
-                    : "border-transparent text-[var(--ink-muted)]"
-                }`}
+                className="font-mono"
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  fontSize: "0.82rem",
+                  fontWeight: "bold",
+                  background: "none",
+                  border: "none",
+                  borderBottom: !isLoginMode ? "3px solid var(--brass)" : "3px solid transparent",
+                  color: !isLoginMode ? "var(--brass)" : "var(--ink-muted)",
+                  cursor: "pointer"
+                }}
               >
                 1. Sign Up (New Account)
               </button>
               <button
                 type="button"
                 onClick={() => { setIsLoginMode(true); setError(""); }}
-                className={`flex-1 py-2 font-mono text-xs font-semibold border-b-2 transition ${
-                  isLoginMode
-                    ? "border-[var(--brass)] text-[var(--brass)]"
-                    : "border-transparent text-[var(--ink-muted)]"
-                }`}
+                className="font-mono"
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  fontSize: "0.82rem",
+                  fontWeight: "bold",
+                  background: "none",
+                  border: "none",
+                  borderBottom: isLoginMode ? "3px solid var(--brass)" : "3px solid transparent",
+                  color: isLoginMode ? "var(--brass)" : "var(--ink-muted)",
+                  cursor: "pointer"
+                }}
               >
                 2. Log In (Existing)
               </button>
@@ -169,55 +270,103 @@ export default function Signup() {
             <ErrorBanner message={error} onClose={() => setError("")} />
 
             {/* Step 2: Form Input */}
-            <form onSubmit={handleAuth} className="space-y-4">
+            <form onSubmit={handleAuth} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {!isLoginMode && (
-                <div className="space-y-1">
-                  <label className="text-xs font-mono text-[var(--ink-muted)]">Full Name</label>
+                <div>
+                  <label className="font-mono text-muted" style={{ display: "block", fontSize: "0.78rem", marginBottom: "6px" }}>
+                    Full Name
+                  </label>
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={role === "admin" ? "District Commission Admin" : "Advocate Rajesh Kumar"}
-                    className="w-full p-3 rounded-lg border border-[var(--line)] bg-[var(--bg)] text-[var(--ink)] text-sm focus:border-[var(--brass)] outline-none"
+                    style={{
+                      width: "100%",
+                      padding: "12px 14px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--line)",
+                      backgroundColor: "var(--bg)",
+                      color: "var(--ink)",
+                      fontSize: "0.95rem",
+                      boxSizing: "border-box",
+                      outline: "none"
+                    }}
                   />
                 </div>
               )}
 
-              <div className="space-y-1">
-                <label className="text-xs font-mono text-[var(--ink-muted)]">Email Address</label>
+              <div>
+                <label className="font-mono text-muted" style={{ display: "block", fontSize: "0.78rem", marginBottom: "6px" }}>
+                  Email Address
+                </label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={role === "admin" ? "admin@lexagent.dev" : "user@lexagent.in"}
-                  className="w-full p-3 rounded-lg border border-[var(--line)] bg-[var(--bg)] text-[var(--ink)] text-sm focus:border-[var(--brass)] outline-none"
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    borderRadius: "8px",
+                    border: "1px solid var(--line)",
+                    backgroundColor: "var(--bg)",
+                    color: "var(--ink)",
+                    fontSize: "0.95rem",
+                    boxSizing: "border-box",
+                    outline: "none"
+                  }}
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-mono text-[var(--ink-muted)]">Password</label>
+              <div>
+                <label className="font-mono text-muted" style={{ display: "block", fontSize: "0.78rem", marginBottom: "6px" }}>
+                  Password
+                </label>
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full p-3 rounded-lg border border-[var(--line)] bg-[var(--bg)] text-[var(--ink)] text-sm focus:border-[var(--brass)] outline-none"
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    borderRadius: "8px",
+                    border: "1px solid var(--line)",
+                    backgroundColor: "var(--bg)",
+                    color: "var(--ink)",
+                    fontSize: "0.95rem",
+                    boxSizing: "border-box",
+                    outline: "none"
+                  }}
                 />
               </div>
 
               {!isLoginMode && (
-                <div className="space-y-1">
-                  <label className="text-xs font-mono text-[var(--ink-muted)]">Confirm Password</label>
+                <div>
+                  <label className="font-mono text-muted" style={{ display: "block", fontSize: "0.78rem", marginBottom: "6px" }}>
+                    Confirm Password
+                  </label>
                   <input
                     type="password"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full p-3 rounded-lg border border-[var(--line)] bg-[var(--bg)] text-[var(--ink)] text-sm focus:border-[var(--brass)] outline-none"
+                    style={{
+                      width: "100%",
+                      padding: "12px 14px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--line)",
+                      backgroundColor: "var(--bg)",
+                      color: "var(--ink)",
+                      fontSize: "0.95rem",
+                      boxSizing: "border-box",
+                      outline: "none"
+                    }}
                   />
                 </div>
               )}
@@ -225,7 +374,14 @@ export default function Signup() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 rounded-lg font-mono text-sm font-semibold bg-[var(--brass)] text-[var(--bg)] hover:bg-[var(--brass-hover)] transition disabled:opacity-50 shadow-lg mt-2"
+                className="btn-brass"
+                style={{
+                  width: "100%",
+                  padding: "14px",
+                  fontSize: "0.95rem",
+                  marginTop: "8px",
+                  boxShadow: "0 4px 14px rgba(201, 164, 94, 0.3)"
+                }}
               >
                 {loading
                   ? "Processing..."
@@ -235,18 +391,26 @@ export default function Signup() {
               </button>
             </form>
 
-            <div className="text-center text-xs text-[var(--ink-muted)] pt-2 border-t border-[var(--line)]">
+            <div style={{ textAlign: "center", fontSize: "0.8rem", color: "var(--ink-muted)", marginTop: "20px", paddingTop: "16px", borderTop: "1px solid var(--line)" }}>
               {isLoginMode ? (
                 <>
                   Need a new account?{" "}
-                  <button onClick={() => setIsLoginMode(false)} className="text-[var(--brass)] hover:underline font-mono font-bold">
+                  <button
+                    onClick={() => setIsLoginMode(false)}
+                    className="font-mono text-brass"
+                    style={{ background: "none", border: "none", fontWeight: "bold", cursor: "pointer", textDecoration: "underline" }}
+                  >
                     Register here
                   </button>
                 </>
               ) : (
                 <>
                   Already registered?{" "}
-                  <button onClick={() => setIsLoginMode(true)} className="text-[var(--brass)] hover:underline font-mono font-bold">
+                  <button
+                    onClick={() => setIsLoginMode(true)}
+                    className="font-mono text-brass"
+                    style={{ background: "none", border: "none", fontWeight: "bold", cursor: "pointer", textDecoration: "underline" }}
+                  >
                     Log in here
                   </button>
                 </>
@@ -254,15 +418,27 @@ export default function Signup() {
             </div>
 
             {isLoginMode && role === "admin" && (
-              <div className="p-3 rounded-lg bg-[var(--bg)] border border-[var(--line)] text-center text-xs font-mono text-[var(--ink-muted)]">
-                💡 Default Admin Login: <span className="text-[var(--brass)] font-bold">admin@lexagent.dev</span> / <span className="text-[var(--brass)] font-bold">admin123</span>
+              <div
+                className="font-mono"
+                style={{
+                  marginTop: "16px",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  backgroundColor: "var(--bg)",
+                  border: "1px solid var(--line)",
+                  textAlign: "center",
+                  fontSize: "0.75rem",
+                  color: "var(--ink-muted)"
+                }}
+              >
+                💡 Default Admin Login: <span className="text-brass" style={{ fontWeight: "bold" }}>admin@lexagent.dev</span> / <span className="text-brass" style={{ fontWeight: "bold" }}>admin123</span>
               </div>
             )}
           </div>
         )}
       </main>
 
-      <footer className="py-6 border-t border-[var(--line)] text-center text-xs font-mono text-[var(--ink-dim)]">
+      <footer className="font-mono text-muted" style={{ padding: "20px", borderTop: "1px solid var(--line)", textAlign: "center", fontSize: "0.75rem" }}>
         LexAgent — Consumer Protection Act 2019 Legal Intelligence Platform © 2026
       </footer>
     </div>

@@ -49,35 +49,85 @@ export default function Dashboard() {
     (t.threadId || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const totalCases = threads.length;
+  const totalTurns = threads.reduce((acc, t) => acc + (t.turnCount || 1), 0);
+
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--ink)" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", color: "var(--ink)", display: "flex", flexDirection: "column" }}>
       <Navbar />
 
-      <main className="max-w-6xl mx-auto px-6 py-10 flex-1 w-full space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--line)] pb-6">
+      <main style={{ flex: 1, maxWidth: "1200px", margin: "0 auto", padding: "40px 24px", width: "100%", boxSizing: "border-box" }}>
+        {/* Header Title Section */}
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "20px", borderBottom: "1px solid var(--line)", paddingBottom: "24px", marginBottom: "28px" }}>
           <div>
-            <h1 className="text-3xl font-serif">Consumer Case Dashboard</h1>
-            <p className="text-sm font-mono text-[var(--ink-muted)] mt-1">Manage and review your statutory dispute history</p>
+            <h1 className="font-serif text-brass" style={{ fontSize: "2.2rem", margin: "0 0 6px 0", letterSpacing: "0.5px" }}>
+              Consumer Case Dashboard
+            </h1>
+            <p className="font-mono text-muted" style={{ fontSize: "0.88rem", margin: 0 }}>
+              Manage and review your statutory dispute history under Consumer Protection Act 2019
+            </p>
           </div>
 
           <Link
             to="/new-case"
-            className="px-6 py-3 rounded-lg font-mono text-xs font-semibold bg-[var(--brass)] text-[var(--bg)] hover:bg-[var(--brass-hover)] transition shadow-md"
+            className="font-mono"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "12px 20px",
+              borderRadius: "8px",
+              backgroundColor: "var(--brass)",
+              color: "var(--bg)",
+              textDecoration: "none",
+              fontSize: "0.85rem",
+              fontWeight: "bold",
+              boxShadow: "0 4px 14px rgba(201, 164, 94, 0.3)"
+            }}
           >
-            + File New Case
+            ➕ File New Case
           </Link>
         </div>
 
         <ErrorBanner message={error} onClose={() => setError(null)} />
 
+        {/* Quick Metrics Bar */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px", marginBottom: "28px" }}>
+          <div style={{ padding: "20px", borderRadius: "12px", border: "1px solid var(--line)", backgroundColor: "var(--surface)", boxShadow: "0 4px 16px rgba(0,0,0,0.15)" }}>
+            <div className="font-mono text-muted" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>Total Cases Filed</div>
+            <div className="font-serif text-brass" style={{ fontSize: "2rem", fontWeight: "bold" }}>{totalCases}</div>
+          </div>
+
+          <div style={{ padding: "20px", borderRadius: "12px", border: "1px solid var(--line)", backgroundColor: "var(--surface)", boxShadow: "0 4px 16px rgba(0,0,0,0.15)" }}>
+            <div className="font-mono text-muted" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>Total Debate Turns</div>
+            <div className="font-serif text-brass" style={{ fontSize: "2rem", fontWeight: "bold" }}>{totalTurns}</div>
+          </div>
+
+          <div style={{ padding: "20px", borderRadius: "12px", border: "1px solid var(--line)", backgroundColor: "var(--surface)", boxShadow: "0 4px 16px rgba(0,0,0,0.15)" }}>
+            <div className="font-mono text-muted" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "6px" }}>Judicial Bench Engine</div>
+            <div className="font-serif text-brass" style={{ fontSize: "1.2rem", fontWeight: "bold" }}>IRAC Adjudicator</div>
+          </div>
+        </div>
+
         {/* Search Bar */}
-        <div className="flex items-center space-x-4">
+        <div style={{ marginBottom: "24px" }}>
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by case ID, category, or claim facts..."
-            className="flex-1 p-3 rounded-lg border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] text-sm focus:border-[var(--brass)] outline-none"
+            placeholder="🔍 Search by case ID, category, or claim facts..."
+            style={{
+              width: "100%",
+              padding: "14px 18px",
+              borderRadius: "10px",
+              border: "1px solid var(--line)",
+              backgroundColor: "var(--surface)",
+              color: "var(--ink)",
+              fontSize: "0.95rem",
+              boxSizing: "border-box",
+              outline: "none",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.1)"
+            }}
           />
         </div>
 
@@ -85,53 +135,122 @@ export default function Dashboard() {
         {loading ? (
           <LoadingSpinner message="Retrieving user thread history..." />
         ) : filteredThreads.length === 0 ? (
-          <div className="p-12 text-center rounded-xl border border-[var(--line)] bg-[var(--surface)] space-y-4">
-            <h3 className="text-xl font-serif">No Case Threads Found</h3>
-            <p className="text-sm text-[var(--ink-muted)]">You have not submitted any consumer disputes yet.</p>
+          <div
+            style={{
+              padding: "48px 24px",
+              textAlign: "center",
+              borderRadius: "16px",
+              border: "1px solid var(--line)",
+              backgroundColor: "var(--surface)",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.2)"
+            }}
+          >
+            <div style={{ fontSize: "3rem", marginBottom: "12px" }}>📂</div>
+            <h3 className="font-serif" style={{ fontSize: "1.3rem", margin: "0 0 8px 0" }}>No Case Threads Found</h3>
+            <p className="font-mono text-muted" style={{ fontSize: "0.88rem", margin: "0 0 20px 0" }}>
+              {searchTerm ? "No case matches your search filter." : "You have not submitted any consumer disputes yet."}
+            </p>
             <Link
               to="/new-case"
-              className="inline-block px-6 py-2.5 rounded-lg font-mono text-xs font-semibold bg-[var(--brass)] text-[var(--bg)] hover:bg-[var(--brass-hover)] transition"
+              className="btn-brass"
+              style={{ display: "inline-block", padding: "12px 24px", fontSize: "0.88rem", textDecoration: "none" }}
             >
               File Your First Case →
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {filteredThreads.map((t) => (
               <div
                 key={t.threadId}
-                className="p-6 rounded-xl border border-[var(--line)] bg-[var(--surface)] flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-[var(--brass)] transition"
+                style={{
+                  padding: "24px",
+                  borderRadius: "14px",
+                  border: "1px solid var(--line)",
+                  borderLeft: "4px solid var(--brass)",
+                  backgroundColor: "var(--surface)",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "16px",
+                  boxShadow: "0 4px 18px rgba(0,0,0,0.12)",
+                  transition: "transform 0.2s ease, border-color 0.2s ease"
+                }}
               >
-                <div className="space-y-1 max-w-2xl">
-                  <div className="flex items-center space-x-3">
-                    <span className="font-mono text-xs text-[var(--brass)] font-semibold">{t.category}</span>
-                    <span className="font-mono text-xs text-[var(--ink-dim)]">ID: {t.threadId}</span>
+                <div style={{ flex: 1, minWidth: "280px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px", flexWrap: "wrap" }}>
+                    <span
+                      className="font-mono"
+                      style={{
+                        padding: "3px 10px",
+                        borderRadius: "4px",
+                        fontSize: "0.72rem",
+                        fontWeight: "bold",
+                        backgroundColor: "var(--brass-light)",
+                        color: "var(--brass)",
+                        border: "1px solid var(--line-bright)"
+                      }}
+                    >
+                      {t.category || "Consumer Dispute"}
+                    </span>
+                    <span className="font-mono text-muted" style={{ fontSize: "0.75rem", opacity: 0.8 }}>
+                      ID: {t.threadId}
+                    </span>
                   </div>
+
                   <h3
                     onClick={() => navigate(`/verdict/${t.threadId}`)}
-                    className="font-serif text-lg text-[var(--ink)] cursor-pointer hover:text-[var(--brass)] transition"
+                    className="font-serif text-brass"
+                    style={{
+                      fontSize: "1.15rem",
+                      margin: "0 0 10px 0",
+                      cursor: "pointer",
+                      lineHeight: "1.4"
+                    }}
                   >
                     {t.firstQuestion}
                   </h3>
-                  <div className="flex items-center space-x-4 text-xs font-mono text-[var(--ink-muted)] pt-1">
-                    <span>Turns: {t.turnCount}</span>
-                    <span>Date: {new Date(t.createdAt).toLocaleDateString()}</span>
+
+                  <div className="font-mono text-muted" style={{ display: "flex", alignItems: "center", gap: "16px", fontSize: "0.78rem" }}>
+                    <span>🔄 Turns: <strong>{t.turnCount}</strong></span>
+                    <span>📅 Date: <strong>{new Date(t.createdAt).toLocaleDateString()}</strong></span>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3">
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <button
                     onClick={() => navigate(`/verdict/${t.threadId}`)}
-                    className="px-4 py-2 rounded-lg font-mono text-xs border border-[var(--brass)] text-[var(--brass)] hover:bg-[var(--brass-light)] transition"
+                    className="btn-outline-brass font-mono"
+                    style={{
+                      padding: "10px 18px",
+                      fontSize: "0.82rem",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px"
+                    }}
                   >
-                    View Verdict
+                    📜 View Verdict
                   </button>
+
                   <button
                     onClick={() => handleDelete(t.threadId)}
                     disabled={deletingId === t.threadId}
-                    className="px-3 py-2 rounded-lg font-mono text-xs text-[var(--oppose-oxblood-bright)] hover:bg-[var(--oppose-bg)] transition"
+                    className="font-mono"
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: "6px",
+                      border: "1px solid rgba(239, 68, 68, 0.4)",
+                      backgroundColor: "rgba(239, 68, 68, 0.1)",
+                      color: "#f87171",
+                      cursor: "pointer",
+                      fontSize: "0.82rem",
+                      fontWeight: "semibold"
+                    }}
                   >
-                    {deletingId === t.threadId ? "Deleting..." : "Delete"}
+                    {deletingId === t.threadId ? "Deleting..." : "🗑️ Delete"}
                   </button>
                 </div>
               </div>

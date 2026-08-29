@@ -776,12 +776,7 @@ export default function Home() {
         {/* Question & Continuous Proof Submission Box */}
         <QuestionBox onSubmit={handleStartStream} loading={isAnalyzing} isFollowUp={Boolean(threadId || judge)} />
 
-        {/* DEBATE ANALYSIS GRAPH (Rendered during active analysis or after verdict) */}
-        {(isAnalyzing || support || oppose || judge) && (
-          <div style={{ margin: "24px 0 32px 0" }}>
-            <DebateAnalysisGraph supportData={support} opposeData={oppose} judgeData={judge} loading={isAnalyzing} />
-          </div>
-        )}
+
 
         <hr className="hairline-divider" />
 

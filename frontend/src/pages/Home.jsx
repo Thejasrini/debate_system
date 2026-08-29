@@ -49,6 +49,7 @@ export default function Home() {
   const [downloading, setDownloading] = useState(false);
   const [showGraph, setShowGraph] = useState(false);
   const [isNavDrawerOpen, setIsNavDrawerOpen] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   const [feedbackRating, setFeedbackRating] = useState(null);
   const [feedbackComment, setFeedbackComment] = useState("");
@@ -488,6 +489,14 @@ export default function Home() {
                 <span>👤</span> Account Profile
               </button>
 
+              <button
+                onClick={() => { setIsNavDrawerOpen(false); setShowFeedbackModal(true); }}
+                className="btn-outline-brass"
+                style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
+              >
+                <span>💬</span> System Feedback
+              </button>
+
               {user?.role === "admin" && (
                 <button
                   onClick={() => { setIsNavDrawerOpen(false); navigate("/admin"); }}
@@ -498,6 +507,134 @@ export default function Home() {
                 </button>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* SYSTEM FEEDBACK MODAL */}
+      {showFeedbackModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.65)",
+            backdropFilter: "blur(6px)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px"
+          }}
+          onClick={() => setShowFeedbackModal(false)}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "480px",
+              backgroundColor: "var(--surface)",
+              border: "1px solid var(--line-bright)",
+              borderRadius: "16px",
+              padding: "28px",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.4)"
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", paddingBottom: "14px", marginBottom: "20px" }}>
+              <h3 className="font-serif text-brass" style={{ margin: 0, fontSize: "1.2rem" }}>
+                💬 System Feedback & Audit
+              </h3>
+              <button
+                onClick={() => setShowFeedbackModal(false)}
+                style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: "1.2rem", cursor: "pointer" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {feedbackDone ? (
+              <p className="font-mono text-brass" style={{ fontSize: "0.9rem", margin: 0, textAlign: "center", padding: "20px 0" }}>
+                ✓ Thank you! Your feedback has been recorded for system alignment.
+              </p>
+            ) : (
+              <form onSubmit={handleFeedbackSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <p className="font-mono text-muted" style={{ fontSize: "0.85rem", margin: 0 }}>
+                  Help us improve LexAgent by rating accuracy and legal reasoning quality:
+                </p>
+
+                <div style={{ display: "flex", gap: "12px" }}>
+                  <button
+                    type="button"
+                    onClick={() => setFeedbackRating("thumbs_up")}
+                    className="font-mono"
+                    style={{
+                      flex: 1,
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: feedbackRating === "thumbs_up" ? "2px solid var(--support-green)" : "1px solid var(--line)",
+                      backgroundColor: feedbackRating === "thumbs_up" ? "var(--support-bg)" : "var(--bg)",
+                      color: feedbackRating === "thumbs_up" ? "var(--support-green-bright)" : "var(--ink-muted)",
+                      fontSize: "0.85rem",
+                      cursor: "pointer"
+                    }}
+                  >
+                    👍 Accurate
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFeedbackRating("thumbs_down")}
+                    className="font-mono"
+                    style={{
+                      flex: 1,
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: feedbackRating === "thumbs_down" ? "2px solid var(--oppose-oxblood)" : "1px solid var(--line)",
+                      backgroundColor: feedbackRating === "thumbs_down" ? "var(--oppose-bg)" : "var(--bg)",
+                      color: feedbackRating === "thumbs_down" ? "var(--oppose-oxblood-bright)" : "var(--ink-muted)",
+                      fontSize: "0.85rem",
+                      cursor: "pointer"
+                    }}
+                  >
+                    👎 Inaccurate
+                  </button>
+                </div>
+
+                <textarea
+                  rows={3}
+                  value={feedbackComment}
+                  onChange={(e) => setFeedbackComment(e.target.value)}
+                  placeholder="Optional comments on statutory reasoning or citation accuracy..."
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    border: "1px solid var(--line)",
+                    backgroundColor: "var(--bg)",
+                    color: "var(--ink)",
+                    fontSize: "0.88rem",
+                    boxSizing: "border-box",
+                    outline: "none"
+                  }}
+                />
+
+                <button
+                  type="submit"
+                  disabled={!feedbackRating}
+                  className="btn-brass font-mono"
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    fontSize: "0.88rem",
+                    fontWeight: "bold",
+                    opacity: !feedbackRating ? 0.5 : 1
+                  }}
+                >
+                  Submit Feedback →
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}
@@ -836,71 +973,6 @@ export default function Home() {
                         <DebateAnalysisGraph supportData={support} opposeData={oppose} judgeData={judge} loading={isAnalyzing} />
                       </div>
                     )}
-
-                    {/* Feedback Rating Widget */}
-                    <div className="docket-card">
-                      <h4 className="font-serif text-brass" style={{ margin: "0 0 12px 0" }}>Accuracy Feedback Audit</h4>
-                      {feedbackDone ? (
-                        <p className="font-mono text-brass" style={{ fontSize: "0.85rem", margin: 0 }}>
-                          ✓ Thank you! Your feedback has been logged for alignment analytics.
-                        </p>
-                      ) : (
-                        <form onSubmit={handleFeedbackSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                          <div style={{ display: "flex", gap: "12px" }}>
-                            <button
-                              type="button"
-                              onClick={() => setFeedbackRating("thumbs_up")}
-                              style={{
-                                padding: "8px 16px",
-                                borderRadius: "6px",
-                                border: feedbackRating === "thumbs_up" ? "1px solid var(--support-green)" : "1px solid var(--line)",
-                                backgroundColor: feedbackRating === "thumbs_up" ? "var(--support-bg)" : "transparent",
-                                color: feedbackRating === "thumbs_up" ? "var(--support-green-bright)" : "var(--ink-muted)",
-                                cursor: "pointer"
-                              }}
-                            >
-                              👍 Thumbs Up (Accurate Verdict)
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setFeedbackRating("thumbs_down")}
-                              style={{
-                                padding: "8px 16px",
-                                borderRadius: "6px",
-                                border: feedbackRating === "thumbs_down" ? "1px solid var(--oppose-oxblood)" : "1px solid var(--line)",
-                                backgroundColor: feedbackRating === "thumbs_down" ? "var(--oppose-bg)" : "transparent",
-                                color: feedbackRating === "thumbs_down" ? "var(--oppose-oxblood-bright)" : "var(--ink-muted)",
-                                cursor: "pointer"
-                              }}
-                            >
-                              👎 Thumbs Down (Inaccurate Verdict)
-                            </button>
-                          </div>
-                          {feedbackRating && (
-                            <div style={{ display: "flex", gap: "12px" }}>
-                              <input
-                                type="text"
-                                value={feedbackComment}
-                                onChange={(e) => setFeedbackComment(e.target.value)}
-                                placeholder="Optional feedback comment on statutory reasoning..."
-                                style={{
-                                  flex: 1,
-                                  padding: "8px 12px",
-                                  borderRadius: "6px",
-                                  border: "1px solid var(--line)",
-                                  backgroundColor: "var(--bg)",
-                                  color: "var(--ink)",
-                                  fontSize: "0.85rem"
-                                }}
-                              />
-                              <button type="submit" className="btn-outline-brass">
-                                Submit Feedback
-                              </button>
-                            </div>
-                          )}
-                        </form>
-                      )}
-                    </div>
                   </div>
                 )
               )}

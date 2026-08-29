@@ -1,6 +1,7 @@
 import axios from "axios";
+import { API_HOST } from "../config/apiConfig";
 
-const API_BASE = "http://localhost:5000/api/history";
+const API_BASE = `${API_HOST}/history`;
 
 export async function getThreadsApi(token) {
   const res = await axios.get(`${API_BASE}`, {

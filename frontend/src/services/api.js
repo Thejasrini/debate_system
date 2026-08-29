@@ -1,7 +1,8 @@
 import axios from "axios";
+import { API_HOST } from "../config/apiConfig";
 
 const API = axios.create({
-  baseURL: "/api"
+  baseURL: API_HOST
 });
 
 /**
@@ -15,14 +16,7 @@ const API = axios.create({
  * @param {function} onComplete () => void
  */
 export async function streamDebate(question, threadId, onEvent, onError, onComplete, token = null) {
-  const endpoints = [
-    "/api/debate",
-    "http://127.0.0.1:5000/api/debate",
-    "http://localhost:5000/api/debate"
-  ];
-
-  let response = null;
-  let lastError = null;
+  const targetUrl = `${API_HOST}/debate`;
 
   const authToken = token || localStorage.getItem("accessToken") || localStorage.getItem("lexagent_token");
   const headers = {
@@ -32,26 +26,21 @@ export async function streamDebate(question, threadId, onEvent, onError, onCompl
     headers["Authorization"] = `Bearer ${authToken}`;
   }
 
-  for (const targetUrl of endpoints) {
-    try {
-      response = await fetch(targetUrl, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ question, threadId })
-      });
-
-      // If we got an HTTP response (even 400/500), break and handle status
-      if (response) {
-        break;
-      }
-    } catch (err) {
-      lastError = err;
-      console.warn(`Fetch connection error for ${targetUrl}:`, err.message);
-    }
+  let response = null;
+  try {
+    response = await fetch(targetUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ question, threadId })
+    });
+  } catch (err) {
+    console.warn(`Fetch connection error for ${targetUrl}:`, err.message);
+    if (onError) onError(`Unable to reach backend server at ${targetUrl}. Please ensure backend server is online.`);
+    return;
   }
 
   if (!response) {
-    if (onError) onError(lastError ? lastError.message : "Unable to reach backend server at http://127.0.0.1:5000.");
+    if (onError) onError("No response received from backend server.");
     return;
   }
 

@@ -1,6 +1,7 @@
 import axios from "axios";
+import { API_HOST } from "../config/apiConfig";
 
-const API_BASE = "http://localhost:5000/api/admin/stats";
+const API_BASE = `${API_HOST}/admin/stats`;
 
 export async function getOverviewStats(token) {
   const res = await axios.get(`${API_BASE}/overview`, {
@@ -45,21 +46,21 @@ export async function getFeedbackStats(token) {
 }
 
 export async function getFeedbackListApi(token) {
-  const res = await axios.get(`http://localhost:5000/api/admin/feedback/list`, {
+  const res = await axios.get(`${API_HOST}/admin/feedback/list`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   return res.data;
 }
 
 export async function getRegisteredUsersApi(token) {
-  const res = await axios.get(`http://localhost:5000/api/admin/users`, {
+  const res = await axios.get(`${API_HOST}/admin/users`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   return res.data;
 }
 
 export async function getAllCasesApi(token) {
-  const res = await axios.get(`http://localhost:5000/api/admin/cases`, {
+  const res = await axios.get(`${API_HOST}/admin/cases`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   return res.data;

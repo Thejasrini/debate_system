@@ -1,6 +1,7 @@
 import axios from "axios";
+import { API_HOST } from "../config/apiConfig";
 
-const API_BASE = "http://localhost:5000/api/feedback";
+const API_BASE = `${API_HOST}/feedback`;
 
 export async function submitFeedbackApi(threadId, turnIndex, rating, comment, token) {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};

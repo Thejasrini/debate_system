@@ -1,6 +1,7 @@
 import axios from "axios";
+import { API_HOST } from "../config/apiConfig";
 
-const API_BASE = "http://localhost:5000/api/export";
+const API_BASE = `${API_HOST}/export`;
 
 export async function downloadVerdictPDF(threadId, turnIndex = 0, token) {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};

@@ -740,16 +740,7 @@ export default function Home() {
       {/* Main Container */}
       <main style={{ maxWidth: "1280px", margin: "0 auto", padding: "28px 24px 160px 24px" }}>
         {/* Context Header */}
-        <div style={{ marginBottom: "28px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "12px" }}>
-          <div>
-            <h2 className="font-serif text-parchment" style={{ fontSize: "1.5rem", fontWeight: "600" }}>
-              Indian Consumer Protection Legal Intelligence System
-            </h2>
-            <p className="text-muted font-sans" style={{ fontSize: "0.9rem", marginTop: "4px" }}>
-              Continuous Adversarial Legal Debate System strictly governed by the <strong className="text-brass">Consumer Protection Act, 2019</strong>.
-            </p>
-          </div>
-
+        <div style={{ marginBottom: "20px", display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
           <div className="font-mono text-muted" style={{ fontSize: "0.8rem", textAlign: "right" }}>
             User: <span className="text-brass">{user ? `${user.name} (${user.role})` : "Guest"}</span>
           </div>

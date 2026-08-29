@@ -44,7 +44,7 @@ export default function AdminAnalytics({ defaultTab }) {
   else if (location.pathname.includes("/users")) currentTab = "users";
   else if (location.pathname.includes("/cases")) currentTab = "cases";
   else if (location.pathname.includes("/feedback")) currentTab = "feedback";
-  else if (!currentTab) currentTab = "all";
+  else currentTab = defaultTab || "users";
 
   const [activeTab, setActiveTab] = useState(currentTab);
 
@@ -255,7 +255,7 @@ export default function AdminAnalytics({ defaultTab }) {
             </div>
 
             {/* TAB 1: OVERVIEW SYSTEM CHARTS */}
-            {(activeTab === "all" || activeTab === "overview") && (
+            {activeTab === "overview" && (
               <div style={{ marginBottom: "36px" }}>
                 <div style={{ borderBottom: "1px solid var(--line)", paddingBottom: "10px", marginBottom: "20px" }}>
                   <h2 className="font-serif text-brass" style={{ fontSize: "1.4rem", margin: 0 }}>
@@ -349,7 +349,7 @@ export default function AdminAnalytics({ defaultTab }) {
             )}
 
             {/* TAB 2: REGISTERED USER ACCOUNTS */}
-            {(activeTab === "all" || activeTab === "users") && (
+            {activeTab === "users" && (
               <div style={{ padding: "28px", borderRadius: "16px", border: "1px solid var(--line)", backgroundColor: "var(--surface)", boxShadow: "0 4px 20px rgba(0,0,0,0.12)", marginBottom: "36px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", paddingBottom: "16px", marginBottom: "20px" }}>
                   <div>
@@ -428,7 +428,7 @@ export default function AdminAnalytics({ defaultTab }) {
             )}
 
             {/* TAB 3: USER CASES & DISPUTES LOG */}
-            {(activeTab === "all" || activeTab === "cases") && (
+            {activeTab === "cases" && (
               <div style={{ padding: "28px", borderRadius: "16px", border: "1px solid var(--line)", backgroundColor: "var(--surface)", boxShadow: "0 4px 20px rgba(0,0,0,0.12)", marginBottom: "36px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", paddingBottom: "16px", marginBottom: "20px" }}>
                   <div>
@@ -512,7 +512,7 @@ export default function AdminAnalytics({ defaultTab }) {
             )}
 
             {/* TAB 4: USER FEEDBACK LOG */}
-            {(activeTab === "all" || activeTab === "feedback") && (
+            {activeTab === "feedback" && (
               <div style={{ padding: "28px", borderRadius: "16px", border: "1px solid var(--line)", backgroundColor: "var(--surface)", boxShadow: "0 4px 20px rgba(0,0,0,0.12)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", paddingBottom: "16px", marginBottom: "20px" }}>
                   <div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorBanner from "../components/ErrorBanner";
@@ -10,7 +11,9 @@ import {
   getConfidenceStats,
   getHallucinationStats,
   getFeedbackStats,
-  getFeedbackListApi
+  getFeedbackListApi,
+  getRegisteredUsersApi,
+  getAllCasesApi
 } from "../services/adminApi";
 import {
   ResponsiveContainer,
@@ -32,6 +35,7 @@ import "./AdminAnalytics.css";
 
 export default function AdminAnalytics() {
   const { accessToken } = useAuth();
+  const navigate = useNavigate();
 
   const [overview, setOverview] = useState(null);
   const [volume, setVolume] = useState([]);
@@ -40,6 +44,8 @@ export default function AdminAnalytics() {
   const [hallucinations, setHallucinations] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const [feedbackList, setFeedbackList] = useState([]);
+  const [usersList, setUsersList] = useState([]);
+  const [casesList, setCasesList] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -49,14 +55,16 @@ export default function AdminAnalytics() {
     setLoading(true);
     setError(null);
     try {
-      const [ov, vol, dom, conf, hal, fb, fbList] = await Promise.all([
+      const [ov, vol, dom, conf, hal, fb, fbList, usersRes, casesRes] = await Promise.all([
         getOverviewStats(accessToken),
         getVolumeStats(accessToken),
         getDomainStats(accessToken),
         getConfidenceStats(accessToken),
         getHallucinationStats(accessToken),
         getFeedbackStats(accessToken),
-        getFeedbackListApi(accessToken)
+        getFeedbackListApi(accessToken),
+        getRegisteredUsersApi(accessToken),
+        getAllCasesApi(accessToken)
       ]);
 
       setOverview(ov);
@@ -66,8 +74,11 @@ export default function AdminAnalytics() {
       setHallucinations(hal);
       setFeedback(fb);
       setFeedbackList(fbList.feedback || []);
+      setUsersList(usersRes.users || []);
+      setCasesList(casesRes.cases || []);
       setLastUpdated(new Date());
     } catch (err) {
+      console.warn("Analytics fetch error:", err);
       setError(err.response?.data?.error || "Failed to load admin analytics statistics.");
     } finally {
       setLoading(false);
@@ -91,7 +102,7 @@ export default function AdminAnalytics() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--line)] pb-6">
           <div>
             <span className="font-mono text-xs text-[var(--brass)] font-semibold">ADMINISTRATIVE AUDIT DASHBOARD</span>
-            <h1 className="text-3xl font-serif mt-1">System Analytics & Grounding Metrics</h1>
+            <h1 className="text-3xl font-serif mt-1">System Analytics & Registered Users Intelligence</h1>
             <p className="text-xs font-mono text-[var(--ink-muted)] mt-1">
               Last auto-refreshed: {lastUpdated.toLocaleTimeString()}
             </p>
@@ -108,19 +119,19 @@ export default function AdminAnalytics() {
         <ErrorBanner message={error} onClose={() => setError(null)} />
 
         {loading && !overview ? (
-          <LoadingSpinner message="Aggregating statutory grounding metrics..." />
+          <LoadingSpinner message="Aggregating user accounts & statutory metrics..." />
         ) : (
           <>
             {/* 6 Headline Summary Cards */}
             <div className="admin-grid-top">
               <div className="stat-card">
                 <span className="stat-card-title">Total Cases</span>
-                <div className="stat-card-value">{overview?.totalCases}</div>
+                <div className="stat-card-value">{overview?.totalCases || casesList.length}</div>
               </div>
 
               <div className="stat-card">
-                <span className="stat-card-title">Total Users</span>
-                <div className="stat-card-value">{overview?.totalUsers}</div>
+                <span className="stat-card-title">Registered Users</span>
+                <div className="stat-card-value">{overview?.totalUsers || usersList.length}</div>
               </div>
 
               <div className="stat-card">
@@ -144,9 +155,161 @@ export default function AdminAnalytics() {
               </div>
             </div>
 
+            {/* 1. Registered Main User Accounts Log Table */}
+            <div style={{ padding: "28px", borderRadius: "14px", border: "1px solid var(--line)", borderTop: "4px solid var(--brass)", backgroundColor: "var(--surface)", boxShadow: "0 4px 18px rgba(0,0,0,0.12)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", paddingBottom: "14px", marginBottom: "20px" }}>
+                <div>
+                  <h3 className="font-serif text-brass" style={{ fontSize: "1.3rem", margin: "0 0 4px 0" }}>
+                    👥 Registered User Accounts & Main IDs ({usersList.length})
+                  </h3>
+                  <p className="font-mono text-muted" style={{ fontSize: "0.82rem", margin: 0 }}>
+                    Complete list of user accounts registered on LexAgent with email credentials and activity stats
+                  </p>
+                </div>
+              </div>
+
+              {usersList.length === 0 ? (
+                <p className="font-mono text-muted" style={{ fontSize: "0.88rem", padding: "20px 0", textAlign: "center" }}>
+                  No registered user accounts found.
+                </p>
+              ) : (
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                    <thead>
+                      <tr style={{ borderBottom: "1px solid var(--line)", textAlign: "left" }}>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>USER NAME</th>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>REGISTERED EMAIL</th>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>ROLE</th>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>CASES FILED</th>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>DATE JOINED</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {usersList.map((u, i) => (
+                        <tr key={u._id || i} style={{ borderBottom: "1px solid var(--line)" }}>
+                          <td style={{ padding: "12px" }}>
+                            <div className="font-serif" style={{ fontWeight: "600", color: "var(--ink)", fontSize: "0.95rem" }}>{u.name}</div>
+                            <div className="font-mono text-muted" style={{ fontSize: "0.72rem" }}>ID: {u._id}</div>
+                          </td>
+                          <td className="font-mono text-brass" style={{ padding: "12px", fontWeight: "bold" }}>
+                            {u.email}
+                          </td>
+                          <td style={{ padding: "12px" }}>
+                            <span
+                              className="font-mono"
+                              style={{
+                                padding: "3px 10px",
+                                borderRadius: "4px",
+                                fontSize: "0.75rem",
+                                fontWeight: "bold",
+                                backgroundColor: u.role === "admin" ? "var(--brass-light)" : "var(--bg)",
+                                color: u.role === "admin" ? "var(--brass)" : "var(--ink-muted)",
+                                border: "1px solid var(--line)",
+                                textTransform: "uppercase"
+                              }}
+                            >
+                              {u.role || "user"}
+                            </span>
+                          </td>
+                          <td className="font-mono text-brass" style={{ padding: "12px", fontWeight: "bold" }}>
+                            {u.totalCases || 0}
+                          </td>
+                          <td className="font-mono text-muted" style={{ padding: "12px", fontSize: "0.78rem", whiteSpace: "nowrap" }}>
+                            {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "N/A"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* 2. All User Submitted Cases & Disputes Log Table */}
+            <div style={{ padding: "28px", borderRadius: "14px", border: "1px solid var(--line)", borderTop: "4px solid var(--brass)", backgroundColor: "var(--surface)", boxShadow: "0 4px 18px rgba(0,0,0,0.12)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", paddingBottom: "14px", marginBottom: "20px" }}>
+                <div>
+                  <h3 className="font-serif text-brass" style={{ fontSize: "1.3rem", margin: "0 0 4px 0" }}>
+                    📜 All User-Submitted Cases & Disputes Log ({casesList.length})
+                  </h3>
+                  <p className="font-mono text-muted" style={{ fontSize: "0.82rem", margin: 0 }}>
+                    Detailed log of all consumer disputes filed across all user accounts in MongoDB
+                  </p>
+                </div>
+              </div>
+
+              {casesList.length === 0 ? (
+                <p className="font-mono text-muted" style={{ fontSize: "0.88rem", padding: "20px 0", textAlign: "center" }}>
+                  No case threads filed in MongoDB yet.
+                </p>
+              ) : (
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                    <thead>
+                      <tr style={{ borderBottom: "1px solid var(--line)", textAlign: "left" }}>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>USER ACCOUNT</th>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>CATEGORY</th>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>DISPUTE SUMMARY / FACTS</th>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>TURNS</th>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>DATE FILED</th>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>ACTION</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {casesList.map((c, i) => (
+                        <tr key={c.threadId || i} style={{ borderBottom: "1px solid var(--line)" }}>
+                          <td style={{ padding: "12px" }}>
+                            <div className="font-serif" style={{ fontWeight: "600", color: "var(--ink)" }}>
+                              {c.userId?.name || "Guest / Unassociated"}
+                            </div>
+                            <div className="font-mono text-brass" style={{ fontSize: "0.75rem" }}>
+                              {c.userId?.email || "N/A"}
+                            </div>
+                          </td>
+                          <td style={{ padding: "12px" }}>
+                            <span
+                              className="font-mono text-brass"
+                              style={{
+                                padding: "3px 8px",
+                                borderRadius: "4px",
+                                backgroundColor: "var(--brass-light)",
+                                fontSize: "0.75rem",
+                                fontWeight: "bold",
+                                border: "1px solid var(--line-bright)"
+                              }}
+                            >
+                              {c.category || "Consumer Dispute"}
+                            </span>
+                          </td>
+                          <td className="font-serif text-muted" style={{ padding: "12px", maxWidth: "320px", lineHeight: "1.4" }}>
+                            {c.firstQuestion || c.turns?.[0]?.question || "No details recorded"}
+                          </td>
+                          <td className="font-mono text-brass" style={{ padding: "12px", fontWeight: "bold" }}>
+                            {c.turns?.length || c.turnCount || 1}
+                          </td>
+                          <td className="font-mono text-muted" style={{ padding: "12px", fontSize: "0.78rem", whiteSpace: "nowrap" }}>
+                            {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "N/A"}
+                          </td>
+                          <td style={{ padding: "12px" }}>
+                            <button
+                              onClick={() => navigate(`/verdict/${c.threadId}`)}
+                              className="btn-outline-brass font-mono"
+                              style={{ padding: "6px 12px", fontSize: "0.75rem", fontWeight: "bold", cursor: "pointer" }}
+                            >
+                              📜 Verdict
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
             {/* Charts Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* 1. Query Volume Chart */}
+              {/* Query Volume Chart */}
               <div className="chart-card">
                 <h3 className="chart-card-title">Query Volume Over Time</h3>
                 <p className="chart-card-subtitle">Daily incoming consumer dispute submissions (Last 90 Days)</p>
@@ -162,7 +325,7 @@ export default function AdminAnalytics() {
                 </div>
               </div>
 
-              {/* 2. Legal Domain Category Distribution */}
+              {/* Legal Domain Category Distribution */}
               <div className="chart-card">
                 <h3 className="chart-card-title">Legal Category Distribution</h3>
                 <p className="chart-card-subtitle">Consumer Protection Act, 2019 Dispute Classification</p>
@@ -180,7 +343,7 @@ export default function AdminAnalytics() {
                 </div>
               </div>
 
-              {/* 3. Judicial Confidence Trend */}
+              {/* Judicial Confidence Trend */}
               <div className="chart-card">
                 <h3 className="chart-card-title">Judicial Confidence Score Trend</h3>
                 <p className="chart-card-subtitle">Average judge confidence over time (0.0 to 1.0)</p>
@@ -197,7 +360,7 @@ export default function AdminAnalytics() {
                 </div>
               </div>
 
-              {/* 4. Grounding Validator Interventions & Hallucinations */}
+              {/* Grounding Validator Interventions & Hallucinations */}
               <div className="chart-card">
                 <h3 className="chart-card-title">Grounding Interventions & Hallucinations</h3>
                 <p className="chart-card-subtitle">Citation errors & ungrounded statutory claims blocked</p>
@@ -216,7 +379,7 @@ export default function AdminAnalytics() {
               </div>
             </div>
 
-            {/* 5. User Submitted Feedback Log Table */}
+            {/* User Submitted Feedback Log Table */}
             <div style={{ padding: "28px", borderRadius: "14px", border: "1px solid var(--line)", backgroundColor: "var(--surface)", boxShadow: "0 4px 18px rgba(0,0,0,0.12)", marginTop: "24px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", paddingBottom: "14px", marginBottom: "20px" }}>
                 <div>

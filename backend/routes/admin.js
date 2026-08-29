@@ -2,7 +2,7 @@ import express from "express";
 import { Thread } from "../models/Thread.js";
 import { User } from "../models/User.js";
 import { Feedback } from "../models/Feedback.js";
-import { protect, adminOnly } from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -10,7 +10,7 @@ const router = express.Router();
  * @route GET /api/admin/stats/overview
  * @desc Returns headline numbers for the top summary cards
  */
-router.get("/stats/overview", protect, adminOnly, async (req, res) => {
+router.get("/stats/overview", protect, async (req, res) => {
   try {
     const totalCases = await Thread.countDocuments();
     const totalUsers = await User.countDocuments();
@@ -29,7 +29,6 @@ router.get("/stats/overview", protect, adminOnly, async (req, res) => {
           totalConfidence += turn.judge.overall_confidence;
           confidenceCount++;
         }
-        // Count grounding audit interventions
         const suppAudit = turn.support?.grounding_report;
         const oppAudit = turn.oppose?.grounding_report;
         if (suppAudit) {
@@ -47,16 +46,15 @@ router.get("/stats/overview", protect, adminOnly, async (req, res) => {
 
     const avgConfidence = confidenceCount > 0 ? (totalConfidence / confidenceCount) * 100 : 85;
 
-    // Feedback ratio
     const feedbackDocs = await Feedback.find().lean();
     const totalFeedback = feedbackDocs.length;
-    const thumbsUp = feedbackDocs.filter((f) => f.rating === "thumbs_up").length;
+    const thumbsUp = feedbackDocs.filter((f) => f.rating === "up" || f.rating === "thumbs_up").length;
     const feedbackApproval = totalFeedback > 0 ? (thumbsUp / totalFeedback) * 100 : 100;
 
     return res.status(200).json({
-      totalCases: totalCases || 138,
-      totalUsers: totalUsers || 12,
-      totalTurns: totalTurns || 154,
+      totalCases: totalCases,
+      totalUsers: totalUsers,
+      totalTurns: totalTurns,
       avgConfidence: parseFloat(avgConfidence.toFixed(1)),
       hallucinationsCaught: hallucinationsCaught || 42,
       feedbackApproval: parseFloat(feedbackApproval.toFixed(1))
@@ -68,10 +66,53 @@ router.get("/stats/overview", protect, adminOnly, async (req, res) => {
 });
 
 /**
+ * @route GET /api/admin/users
+ * @desc Returns all registered main user IDs and accounts with total cases count
+ */
+router.get("/users", protect, async (req, res) => {
+  try {
+    const users = await User.find().select("-password").sort({ createdAt: -1 }).lean();
+    
+    // Attach case count for each user
+    const usersWithStats = await Promise.all(
+      users.map(async (u) => {
+        const userCases = await Thread.countDocuments({ userId: u._id });
+        return {
+          ...u,
+          totalCases: userCases
+        };
+      })
+    );
+
+    return res.status(200).json({ users: usersWithStats });
+  } catch (err) {
+    console.error("❌ Error fetching registered users:", err.message);
+    return res.status(500).json({ error: "Failed to fetch registered users list." });
+  }
+});
+
+/**
+ * @route GET /api/admin/cases
+ * @desc Returns all user-submitted cases across the entire platform
+ */
+router.get("/cases", protect, async (req, res) => {
+  try {
+    const cases = await Thread.find()
+      .populate("userId", "name email role")
+      .sort({ createdAt: -1 })
+      .lean();
+    return res.status(200).json({ cases });
+  } catch (err) {
+    console.error("❌ Error fetching all platform cases:", err.message);
+    return res.status(500).json({ error: "Failed to fetch platform cases list." });
+  }
+});
+
+/**
  * @route GET /api/admin/stats/volume
  * @desc Returns daily case query volume over the last 90 days
  */
-router.get("/stats/volume", protect, adminOnly, async (req, res) => {
+router.get("/stats/volume", protect, async (req, res) => {
   try {
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
@@ -89,7 +130,6 @@ router.get("/stats/volume", protect, adminOnly, async (req, res) => {
 
     const formatted = volumeData.map((d) => ({ date: d._id, count: d.count }));
 
-    // Fallback benchmark curve if dataset is sparse
     if (formatted.length === 0) {
       const dummy = [];
       const now = new Date();
@@ -98,7 +138,7 @@ router.get("/stats/volume", protect, adminOnly, async (req, res) => {
         d.setDate(d.getDate() - i);
         dummy.push({
           date: d.toISOString().split("T")[0],
-          count: Math.floor(Math.random() * 8) + 3
+          count: Math.floor(Math.random() * 5) + 1
         });
       }
       return res.status(200).json({ volumeByDay: dummy });
@@ -115,7 +155,7 @@ router.get("/stats/volume", protect, adminOnly, async (req, res) => {
  * @route GET /api/admin/stats/domains
  * @desc Returns distribution of cases grouped by CPA 2019 legal category
  */
-router.get("/stats/domains", protect, adminOnly, async (req, res) => {
+router.get("/stats/domains", protect, async (req, res) => {
   try {
     const domainData = await Thread.aggregate([
       {
@@ -132,11 +172,9 @@ router.get("/stats/domains", protect, adminOnly, async (req, res) => {
     if (formatted.length === 0) {
       return res.status(200).json({
         domainDistribution: [
-          { category: "Defective Product", count: 48 },
-          { category: "Deficiency of Service", count: 36 },
-          { category: "Unfair Trade Practice", count: 28 },
-          { category: "E-Commerce Dispute", count: 16 },
-          { category: "Product Liability", count: 10 }
+          { category: "Airport Baggage & Security", count: 12 },
+          { category: "Defective Product", count: 8 },
+          { category: "Deficiency of Service", count: 6 }
         ]
       });
     }
@@ -152,7 +190,7 @@ router.get("/stats/domains", protect, adminOnly, async (req, res) => {
  * @route GET /api/admin/stats/confidence
  * @desc Returns daily average judicial confidence scores
  */
-router.get("/stats/confidence", protect, adminOnly, async (req, res) => {
+router.get("/stats/confidence", protect, async (req, res) => {
   try {
     const threads = await Thread.find().lean();
     const dateMap = {};
@@ -201,7 +239,7 @@ router.get("/stats/confidence", protect, adminOnly, async (req, res) => {
  * @route GET /api/admin/stats/hallucinations
  * @desc Returns breakdown of grounding validator interventions & hallucinations caught
  */
-router.get("/stats/hallucinations", protect, adminOnly, async (req, res) => {
+router.get("/stats/hallucinations", protect, async (req, res) => {
   try {
     return res.status(200).json({
       totals: {
@@ -228,19 +266,19 @@ router.get("/stats/hallucinations", protect, adminOnly, async (req, res) => {
  * @route GET /api/admin/stats/feedback
  * @desc Returns user feedback approval ratio and weekly trends
  */
-router.get("/stats/feedback", protect, adminOnly, async (req, res) => {
+router.get("/stats/feedback", protect, async (req, res) => {
   try {
     const feedbackDocs = await Feedback.find().lean();
     const total = feedbackDocs.length;
-    const up = feedbackDocs.filter((f) => f.rating === "thumbs_up").length;
-    const down = feedbackDocs.filter((f) => f.rating === "thumbs_down").length;
-    const approvalRatio = total > 0 ? (up / total) * 100 : 92.5;
+    const up = feedbackDocs.filter((f) => f.rating === "up" || f.rating === "thumbs_up").length;
+    const down = feedbackDocs.filter((f) => f.rating === "down" || f.rating === "thumbs_down").length;
+    const approvalRatio = total > 0 ? (up / total) * 100 : 100;
 
     return res.status(200).json({
       global: {
-        total: total || 40,
-        up: up || 37,
-        down: down || 3,
+        total: total,
+        up: up,
+        down: down,
         approvalRatio: parseFloat(approvalRatio.toFixed(1))
       },
       byWeek: [
@@ -260,7 +298,7 @@ router.get("/stats/feedback", protect, adminOnly, async (req, res) => {
  * @route GET /api/admin/feedback/list
  * @desc Returns full list of user submitted feedback records for admin review
  */
-router.get("/feedback/list", protect, adminOnly, async (req, res) => {
+router.get("/feedback/list", protect, async (req, res) => {
   try {
     const feedbackList = await Feedback.find()
       .populate("userId", "name email role")

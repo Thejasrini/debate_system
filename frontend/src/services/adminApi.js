@@ -50,3 +50,17 @@ export async function getFeedbackListApi(token) {
   });
   return res.data;
 }
+
+export async function getRegisteredUsersApi(token) {
+  const res = await axios.get(`http://localhost:5000/api/admin/users`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return res.data;
+}
+
+export async function getAllCasesApi(token) {
+  const res = await axios.get(`http://localhost:5000/api/admin/cases`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return res.data;
+}

@@ -46,7 +46,12 @@ export default function Signup() {
         navigate("/courtroom");
       }
     } catch (err) {
-      setError(err.response?.data?.error || "Authentication failed. Please check your details.");
+      const serverMsg = err.response?.data?.error;
+      if (serverMsg === "Email already registered.") {
+        setError("This email address is already registered! Please switch to '2. Log In (Existing)' tab to log into your account.");
+      } else {
+        setError(serverMsg || err.message || "Authentication failed. Please check your details.");
+      }
     } finally {
       setLoading(false);
     }

@@ -52,13 +52,12 @@ export async function saveTurn(threadId, turnData, userId = null, category = "")
         $push: { turns: newTurn }
       };
 
-      // Set userId and category on thread creation / update if provided
-      const setOnInsert = {};
-      if (userId) setOnInsert.userId = userId;
-      if (category) setOnInsert.category = category;
+      const setPayload = {};
+      if (userId) setPayload.userId = userId;
+      if (category) setPayload.category = category;
 
-      if (Object.keys(setOnInsert).length > 0) {
-        updatePayload.$setOnInsert = setOnInsert;
+      if (Object.keys(setPayload).length > 0) {
+        updatePayload.$set = setPayload;
       }
 
       await Thread.findOneAndUpdate(

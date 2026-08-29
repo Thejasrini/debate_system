@@ -273,7 +273,8 @@ export default function Home() {
       },
       () => {
         setIsAnalyzing(false);
-      }
+      },
+      accessToken
     );
   };
 

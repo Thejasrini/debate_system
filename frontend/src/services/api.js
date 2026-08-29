@@ -14,7 +14,7 @@ const API = axios.create({
  * @param {function} onError (errorMessage) => void
  * @param {function} onComplete () => void
  */
-export async function streamDebate(question, threadId, onEvent, onError, onComplete) {
+export async function streamDebate(question, threadId, onEvent, onError, onComplete, token = null) {
   const endpoints = [
     "/api/debate",
     "http://127.0.0.1:5000/api/debate",
@@ -24,13 +24,19 @@ export async function streamDebate(question, threadId, onEvent, onError, onCompl
   let response = null;
   let lastError = null;
 
+  const authToken = token || localStorage.getItem("accessToken") || localStorage.getItem("lexagent_token");
+  const headers = {
+    "Content-Type": "application/json"
+  };
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
+  }
+
   for (const targetUrl of endpoints) {
     try {
       response = await fetch(targetUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers,
         body: JSON.stringify({ question, threadId })
       });
 

@@ -63,9 +63,9 @@ export default function Verdict() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)" }}>
+      <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", display: "flex", flexDirection: "column" }}>
         <Navbar />
-        <div className="flex-1 flex items-center justify-center">
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <LoadingSpinner message="Loading judicial verdict & statutory citations..." />
         </div>
       </div>
@@ -76,89 +76,199 @@ export default function Verdict() {
   const judge = latestTurn?.judge;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--ink)" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", color: "var(--ink)", display: "flex", flexDirection: "column" }}>
       <Navbar />
 
-      <main className="max-w-5xl mx-auto px-6 py-10 flex-1 w-full space-y-8">
+      <main style={{ flex: 1, maxWidth: "1100px", margin: "0 auto", padding: "40px 24px", width: "100%", boxSizing: "border-box" }}>
         {/* Header & Actions */}
-        <div className="border-b border-[var(--line)] pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "20px", borderBottom: "1px solid var(--line)", paddingBottom: "24px", marginBottom: "28px" }}>
           <div>
-            <span className="font-mono text-xs text-[var(--brass)]">FORMAL JUDICIAL VERDICT REPORT</span>
-            <h1 className="text-3xl font-serif mt-1">{thread?.category || "Consumer Dispute"}</h1>
-            <p className="text-xs font-mono text-[var(--ink-muted)] mt-1">Case ID: {threadId}</p>
+            <span
+              className="font-mono text-brass"
+              style={{
+                display: "inline-block",
+                padding: "4px 12px",
+                borderRadius: "20px",
+                backgroundColor: "var(--brass-light)",
+                border: "1px solid var(--line-bright)",
+                fontSize: "0.78rem",
+                fontWeight: "bold",
+                marginBottom: "8px"
+              }}
+            >
+              ⚖️ FORMAL JUDICIAL VERDICT REPORT
+            </span>
+            <h1 className="font-serif text-brass" style={{ fontSize: "2.2rem", margin: "4px 0", letterSpacing: "0.5px" }}>
+              {thread?.category || "Consumer Dispute"}
+            </h1>
+            <p className="font-mono text-muted" style={{ fontSize: "0.82rem", margin: 0 }}>
+              Case ID: <strong>{threadId}</strong>
+            </p>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
             <button
               onClick={() => setShowGraph(!showGraph)}
-              className="px-4 py-2.5 rounded-lg font-mono text-xs font-semibold border border-[var(--line)] text-[var(--ink)] hover:border-[var(--brass)] transition"
+              className="font-mono"
+              style={{
+                padding: "10px 18px",
+                borderRadius: "8px",
+                border: "1px solid var(--line)",
+                backgroundColor: "var(--surface)",
+                color: "var(--ink)",
+                fontSize: "0.85rem",
+                fontWeight: "bold",
+                cursor: "pointer"
+              }}
             >
               {showGraph ? "Hide Citation Graph" : "📊 Citation Graph"}
             </button>
+
             <button
               onClick={handleDownloadPDF}
               disabled={downloading}
-              className="px-6 py-2.5 rounded-lg font-mono text-xs font-semibold bg-[var(--brass)] text-[var(--bg)] hover:bg-[var(--brass-hover)] transition shadow-md disabled:opacity-50"
+              className="btn-brass font-mono"
+              style={{
+                padding: "10px 22px",
+                borderRadius: "8px",
+                fontSize: "0.85rem",
+                fontWeight: "bold",
+                boxShadow: "0 4px 14px rgba(201, 164, 94, 0.3)"
+              }}
             >
-              {downloading ? "Generating PDF..." : "📄 Download Court PDF"}
+              {downloading ? "Generating PDF..." : "📥 Download Court PDF"}
             </button>
           </div>
         </div>
 
         <ErrorBanner message={error} onClose={() => setError(null)} />
 
-        {/* Debate Analysis Graph Visualizer Toggle */}
+        {/* Citation Graph Visualizer Overlay */}
         {showGraph && (
-          <div className="p-6 rounded-xl border border-[var(--line)] bg-[var(--surface)]">
-            <DebateAnalysisGraph supportData={latestTurn?.support} opposeData={latestTurn?.oppose} judgeData={latestTurn?.judge} />
+          <div style={{ padding: "24px", borderRadius: "16px", border: "1px solid var(--line)", backgroundColor: "var(--surface)", marginBottom: "28px", boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>
+            <CitationGraph />
           </div>
         )}
 
-        {/* Verdict Banner */}
-        <div className="p-8 rounded-xl border-2 border-[var(--brass)] bg-[var(--surface)] space-y-4 shadow-xl">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-xs text-[var(--brass)]">ADJUDICATION DECISION</span>
-            <span className="font-mono text-sm text-[var(--brass)] font-bold">
-              Confidence: {((judge?.overall_confidence || 0.85) * 100).toFixed(0)}%
+        {/* Verdict Banner Card */}
+        <div
+          style={{
+            padding: "32px",
+            borderRadius: "16px",
+            border: "2px solid var(--brass)",
+            backgroundColor: "var(--surface)",
+            boxShadow: "0 12px 36px rgba(0,0,0,0.25)",
+            marginBottom: "32px"
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "10px" }}>
+            <span className="font-mono text-brass" style={{ fontSize: "0.8rem", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "1px" }}>
+              ⚖️ ADJUDICATION DECISION
+            </span>
+            <span
+              className="font-mono"
+              style={{
+                padding: "4px 14px",
+                borderRadius: "6px",
+                backgroundColor: "var(--brass-light)",
+                color: "var(--brass)",
+                border: "1px solid var(--line-bright)",
+                fontSize: "0.82rem",
+                fontWeight: "bold"
+              }}
+            >
+              Bench Confidence: {((judge?.overall_confidence || 0.85) * 100).toFixed(0)}%
             </span>
           </div>
-          <h2 className="text-3xl font-serif text-[var(--ink)]">{judge?.decision || "Verdict Pending"}</h2>
-          <p className="text-base font-serif text-[var(--ink-muted)] leading-relaxed">{judge?.decision_explanation}</p>
+
+          <h2 className="font-serif text-brass" style={{ fontSize: "2.4rem", margin: "0 0 14px 0", lineHeight: "1.2" }}>
+            {judge?.decision || "Verdict Pending"}
+          </h2>
+
+          <p className="font-serif text-muted" style={{ fontSize: "1.08rem", lineHeight: "1.7", margin: 0 }}>
+            {judge?.decision_explanation}
+          </p>
         </div>
 
         {/* Balance Bar & Debate Analysis Graph */}
-        <div className="space-y-6">
+        <div style={{ display: "flex", flexDirection: "column", gap: "28px", marginBottom: "32px" }}>
           <BalanceBar
             position={judge?.decision?.includes("Consumer") ? -0.7 : judge?.decision?.includes("Respondent") ? 0.7 : 0.0}
             animated={false}
             label="Final Adjudicated Balance of Probability"
           />
+
           <DebateAnalysisGraph supportData={latestTurn?.support} opposeData={latestTurn?.oppose} judgeData={latestTurn?.judge} />
         </div>
 
-        {/* IRAC Sections */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-serif border-b border-[var(--line)] pb-2">IRAC Statutory Reasoning</h3>
+        {/* IRAC Statutory Reasoning Sections */}
+        {judge?.legal_issues_evaluated && judge.legal_issues_evaluated.length > 0 && (
+          <div style={{ marginBottom: "32px" }}>
+            <h3 className="font-serif text-brass" style={{ fontSize: "1.5rem", borderBottom: "1px solid var(--line)", paddingBottom: "10px", marginBottom: "18px" }}>
+              IRAC Statutory Reasoning
+            </h3>
 
-          {judge?.legal_issues_evaluated?.map((issue, idx) => (
-            <div key={idx} className="p-6 rounded-xl border border-[var(--line)] bg-[var(--surface)] space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-xs text-[var(--brass)]">ISSUE #{idx + 1}</span>
-                <span className="text-xs px-2 py-0.5 rounded bg-[var(--brass-light)] text-[var(--brass)] font-mono font-semibold">
-                  {issue.finding}
-                </span>
-              </div>
-              <h4 className="font-serif text-lg text-[var(--ink)]">{issue.issue}</h4>
-              <p className="text-sm text-[var(--ink-muted)] leading-relaxed">{issue.reason}</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {judge.legal_issues_evaluated.map((issue, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    padding: "20px 24px",
+                    borderRadius: "12px",
+                    border: "1px solid var(--line)",
+                    backgroundColor: "var(--surface)",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.12)"
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <span className="font-mono text-brass" style={{ fontSize: "0.78rem", fontWeight: "bold" }}>
+                      ISSUE #{idx + 1}
+                    </span>
+                    <span
+                      className="font-mono"
+                      style={{
+                        padding: "2px 10px",
+                        borderRadius: "4px",
+                        backgroundColor: "var(--brass-light)",
+                        color: "var(--brass)",
+                        fontSize: "0.75rem",
+                        fontWeight: "bold",
+                        border: "1px solid var(--line-bright)"
+                      }}
+                    >
+                      {issue.finding}
+                    </span>
+                  </div>
+
+                  <h4 className="font-serif" style={{ fontSize: "1.18rem", margin: "0 0 8px 0", color: "var(--ink)" }}>
+                    {issue.issue}
+                  </h4>
+
+                  <p className="font-sans text-muted" style={{ fontSize: "0.92rem", lineHeight: "1.6", margin: 0 }}>
+                    {issue.reason}
+                  </p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
 
-        {/* Relief Granted */}
+        {/* Relief Granted Section */}
         {judge?.relief && judge.relief.length > 0 && (
-          <div className="p-6 rounded-xl border border-[var(--line)] bg-[var(--surface)] space-y-3">
-            <h3 className="font-serif text-lg text-[var(--support-green-bright)]">Relief Orders Granted</h3>
-            <ul className="list-disc list-inside text-sm text-[var(--ink-muted)] space-y-1">
+          <div
+            style={{
+              padding: "24px",
+              borderRadius: "14px",
+              border: "1px solid var(--line)",
+              backgroundColor: "var(--surface)",
+              marginBottom: "32px",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.12)"
+            }}
+          >
+            <h3 className="font-serif" style={{ fontSize: "1.25rem", color: "var(--support-green-bright)", margin: "0 0 12px 0" }}>
+              🏆 Relief Orders Granted
+            </h3>
+            <ul style={{ margin: 0, paddingLeft: "20px", color: "var(--ink-muted)", fontSize: "0.92rem", lineHeight: "1.8" }}>
               {judge.relief.map((r, i) => (
                 <li key={i}>{r}</li>
               ))}
@@ -167,69 +277,149 @@ export default function Verdict() {
         )}
 
         {/* Verified Statutory Citations */}
-        <div className="p-6 rounded-xl border border-[var(--line)] bg-[var(--surface)] space-y-4">
-          <h3 className="font-serif text-lg">Verified Legal Authorities & Citations</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {judge?.sources?.map((src, i) => (
-              <div key={i} className="p-4 rounded-lg border border-[var(--line)] bg-[var(--bg)] flex items-center justify-between">
-                <div>
-                  <div className="font-serif text-sm font-medium text-[var(--ink)]">{src.title}</div>
-                  <div className="font-mono text-xs text-[var(--brass)]">{src.identifier}</div>
+        {judge?.sources && judge.sources.length > 0 && (
+          <div
+            style={{
+              padding: "24px",
+              borderRadius: "14px",
+              border: "1px solid var(--line)",
+              backgroundColor: "var(--surface)",
+              marginBottom: "32px",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.12)"
+            }}
+          >
+            <h3 className="font-serif" style={{ fontSize: "1.25rem", margin: "0 0 16px 0", color: "var(--ink)" }}>
+              📚 Verified Legal Authorities & Citations
+            </h3>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "14px" }}>
+              {judge.sources.map((src, i) => (
+                <div
+                  key={i}
+                  style={{
+                    padding: "16px",
+                    borderRadius: "8px",
+                    border: "1px solid var(--line)",
+                    backgroundColor: "var(--bg)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "12px"
+                  }}
+                >
+                  <div>
+                    <div className="font-serif" style={{ fontSize: "0.95rem", fontWeight: "600", color: "var(--ink)", marginBottom: "4px" }}>
+                      {src.title}
+                    </div>
+                    <div className="font-mono text-brass" style={{ fontSize: "0.78rem" }}>
+                      {src.identifier}
+                    </div>
+                  </div>
+                  <span
+                    className="font-mono"
+                    style={{
+                      fontSize: "0.72rem",
+                      padding: "3px 10px",
+                      borderRadius: "4px",
+                      backgroundColor: "var(--support-bg)",
+                      color: "var(--support-green-bright)",
+                      border: "1px solid rgba(78, 144, 120, 0.4)",
+                      whiteSpace: "nowrap"
+                    }}
+                  >
+                    ✓ Grounded
+                  </span>
                 </div>
-                <span className="text-xs px-2 py-1 rounded bg-[var(--support-bg)] text-[var(--support-green-bright)] font-mono">
-                  ✓ Grounded
-                </span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Feedback Loop Widget */}
-        <div className="p-6 rounded-xl border border-[var(--line)] bg-[var(--surface)] space-y-4">
-          <h3 className="font-serif text-lg">Feedback & Rating</h3>
+        <div
+          style={{
+            padding: "24px",
+            borderRadius: "14px",
+            border: "1px solid var(--line)",
+            backgroundColor: "var(--surface)",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.12)"
+          }}
+        >
+          <h3 className="font-serif" style={{ fontSize: "1.25rem", margin: "0 0 14px 0", color: "var(--ink)" }}>
+            💬 Feedback & Bench Alignment Rating
+          </h3>
+
           {feedbackSubmitted ? (
-            <p className="text-sm font-mono text-[var(--support-green-bright)]">
-              ✓ Thank you! Your feedback has been recorded for continuous alignment audit.
+            <p className="font-mono" style={{ color: "var(--support-green-bright)", fontSize: "0.9rem", margin: 0 }}>
+              ✓ Thank you! Your feedback has been recorded for continuous judicial alignment audit.
             </p>
           ) : (
-            <form onSubmit={handleFeedbackSubmit} className="space-y-4">
-              <div className="flex items-center space-x-4">
+            <form onSubmit={handleFeedbackSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ display: "flex", gap: "14px", flexWrap: "wrap" }}>
                 <button
                   type="button"
                   onClick={() => setRating("thumbs_up")}
-                  className={`px-4 py-2 rounded-lg font-mono text-sm border ${
-                    rating === "thumbs_up"
-                      ? "border-[var(--support-green)] bg-[var(--support-bg)] text-[var(--support-green-bright)]"
-                      : "border-[var(--line)] text-[var(--ink-muted)]"
-                  }`}
+                  className="font-mono"
+                  style={{
+                    padding: "10px 18px",
+                    borderRadius: "8px",
+                    border: rating === "thumbs_up" ? "2px solid var(--support-green)" : "1px solid var(--line)",
+                    backgroundColor: rating === "thumbs_up" ? "var(--support-bg)" : "var(--bg)",
+                    color: rating === "thumbs_up" ? "var(--support-green-bright)" : "var(--ink-muted)",
+                    fontSize: "0.88rem",
+                    cursor: "pointer"
+                  }}
                 >
                   👍 Thumbs Up (Accurate)
                 </button>
+
                 <button
                   type="button"
                   onClick={() => setRating("thumbs_down")}
-                  className={`px-4 py-2 rounded-lg font-mono text-sm border ${
-                    rating === "thumbs_down"
-                      ? "border-[var(--oppose-oxblood)] bg-[var(--oppose-bg)] text-[var(--oppose-oxblood-bright)]"
-                      : "border-[var(--line)] text-[var(--ink-muted)]"
-                  }`}
+                  className="font-mono"
+                  style={{
+                    padding: "10px 18px",
+                    borderRadius: "8px",
+                    border: rating === "thumbs_down" ? "2px solid var(--oppose-oxblood)" : "1px solid var(--line)",
+                    backgroundColor: rating === "thumbs_down" ? "var(--oppose-bg)" : "var(--bg)",
+                    color: rating === "thumbs_down" ? "var(--oppose-oxblood-bright)" : "var(--ink-muted)",
+                    fontSize: "0.88rem",
+                    cursor: "pointer"
+                  }}
                 >
                   👎 Thumbs Down (Inaccurate)
                 </button>
               </div>
 
               <textarea
-                rows={2}
+                rows={3}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Optional feedback comment on statutory reasoning or citation accuracy..."
-                className="w-full p-3 rounded-lg border border-[var(--line)] bg-[var(--bg)] text-[var(--ink)] text-sm focus:border-[var(--brass)] outline-none"
+                style={{
+                  width: "100%",
+                  padding: "12px 14px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--line)",
+                  backgroundColor: "var(--bg)",
+                  color: "var(--ink)",
+                  fontSize: "0.92rem",
+                  boxSizing: "border-box",
+                  outline: "none"
+                }}
               />
 
               <button
                 type="submit"
                 disabled={!rating}
-                className="px-6 py-2 rounded-lg font-mono text-xs font-semibold bg-[var(--brass)] text-[var(--bg)] hover:bg-[var(--brass-hover)] transition disabled:opacity-50"
+                className="btn-brass font-mono"
+                style={{
+                  alignSelf: "flex-start",
+                  padding: "10px 24px",
+                  fontSize: "0.85rem",
+                  fontWeight: "bold",
+                  opacity: !rating ? 0.5 : 1
+                }}
               >
                 Submit Feedback →
               </button>

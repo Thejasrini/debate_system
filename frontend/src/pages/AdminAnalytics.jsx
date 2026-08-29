@@ -236,62 +236,6 @@ export default function AdminAnalytics() {
                   {displayTotalTurns}
                 </div>
               </div>
-
-              {/* Card 4: Avg Confidence */}
-              <div
-                style={{
-                  padding: "20px 22px",
-                  borderRadius: "14px",
-                  border: "1px solid var(--line)",
-                  borderLeft: "4px solid var(--support-green-bright)",
-                  backgroundColor: "var(--surface)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.1)"
-                }}
-              >
-                <span className="font-mono text-muted" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", display: "block" }}>
-                  AVG CONFIDENCE
-                </span>
-                <div className="font-serif" style={{ fontSize: "2.2rem", fontWeight: "bold", marginTop: "6px", color: "var(--support-green-bright)" }}>
-                  {displayAvgConfidence}%
-                </div>
-              </div>
-
-              {/* Card 5: Hallucinations Caught */}
-              <div
-                style={{
-                  padding: "20px 22px",
-                  borderRadius: "14px",
-                  border: "1px solid var(--brass)",
-                  backgroundColor: "var(--surface)",
-                  boxShadow: "0 4px 16px rgba(201, 164, 94, 0.15)"
-                }}
-              >
-                <span className="font-mono text-brass" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", display: "block", fontWeight: "bold" }}>
-                  🛡️ AUDIT BLOCKED
-                </span>
-                <div className="font-serif text-brass" style={{ fontSize: "2.2rem", fontWeight: "bold", marginTop: "6px" }}>
-                  {displayHallucinations}
-                </div>
-              </div>
-
-              {/* Card 6: Feedback Approval */}
-              <div
-                style={{
-                  padding: "20px 22px",
-                  borderRadius: "14px",
-                  border: "1px solid var(--line)",
-                  borderLeft: "4px solid var(--support-green-bright)",
-                  backgroundColor: "var(--surface)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.1)"
-                }}
-              >
-                <span className="font-mono text-muted" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", display: "block" }}>
-                  FEEDBACK RATING
-                </span>
-                <div className="font-serif" style={{ fontSize: "2.2rem", fontWeight: "bold", marginTop: "6px", color: "var(--support-green-bright)" }}>
-                  {displayFeedbackApproval}%
-                </div>
-              </div>
             </div>
 
             {/* SECTION 1: Registered Main User Accounts Table */}

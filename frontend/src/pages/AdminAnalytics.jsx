@@ -52,34 +52,37 @@ export default function AdminAnalytics() {
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
   const fetchAllStats = async () => {
+    const token = accessToken || localStorage.getItem("accessToken");
     setLoading(true);
     setError(null);
     try {
-      const [ov, vol, dom, conf, hal, fb, fbList, usersRes, casesRes] = await Promise.all([
-        getOverviewStats(accessToken),
-        getVolumeStats(accessToken),
-        getDomainStats(accessToken),
-        getConfidenceStats(accessToken),
-        getHallucinationStats(accessToken),
-        getFeedbackStats(accessToken),
-        getFeedbackListApi(accessToken),
-        getRegisteredUsersApi(accessToken),
-        getAllCasesApi(accessToken)
+      const results = await Promise.allSettled([
+        getOverviewStats(token),
+        getVolumeStats(token),
+        getDomainStats(token),
+        getConfidenceStats(token),
+        getHallucinationStats(token),
+        getFeedbackStats(token),
+        getFeedbackListApi(token),
+        getRegisteredUsersApi(token),
+        getAllCasesApi(token)
       ]);
 
-      setOverview(ov);
-      setVolume(vol.volumeByDay || []);
-      setDomains(dom.domainDistribution || []);
-      setConfidence(conf.confidenceByDay || []);
-      setHallucinations(hal);
-      setFeedback(fb);
-      setFeedbackList(fbList.feedback || []);
-      setUsersList(usersRes.users || []);
-      setCasesList(casesRes.cases || []);
+      const [ovR, volR, domR, confR, halR, fbR, fbListR, usersR, casesR] = results;
+
+      if (ovR.status === "fulfilled") setOverview(ovR.value);
+      if (volR.status === "fulfilled") setVolume(volR.value?.volumeByDay || []);
+      if (domR.status === "fulfilled") setDomains(domR.value?.domainDistribution || []);
+      if (confR.status === "fulfilled") setConfidence(confR.value?.confidenceByDay || []);
+      if (halR.status === "fulfilled") setHallucinations(halR.value);
+      if (fbR.status === "fulfilled") setFeedback(fbR.value);
+      if (fbListR.status === "fulfilled") setFeedbackList(fbListR.value?.feedback || []);
+      if (usersR.status === "fulfilled") setUsersList(usersR.value?.users || []);
+      if (casesR.status === "fulfilled") setCasesList(casesR.value?.cases || []);
+
       setLastUpdated(new Date());
     } catch (err) {
       console.warn("Analytics fetch error:", err);
-      setError(err.response?.data?.error || "Failed to load admin analytics statistics.");
     } finally {
       setLoading(false);
     }

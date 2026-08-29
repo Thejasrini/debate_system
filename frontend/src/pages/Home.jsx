@@ -349,32 +349,32 @@ export default function Home() {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)" }}>
       {/* Top Header Bar */}
-      <header className="docket-topbar">
-        <div className="docket-title-group" style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
-          <h1 className="font-serif text-brass" style={{ fontSize: "1.15rem", margin: 0, letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
+      <header className="docket-topbar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "20px", width: "100%", boxSizing: "border-box" }}>
+        <div className="docket-title-group" style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
+          <h1 className="font-serif text-brass" style={{ fontSize: "1.1rem", margin: 0, letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
             ⚖️ LEXAGENT COURTROOM
           </h1>
-          <span className="docket-number" style={{ whiteSpace: "nowrap" }}>{caseNumber}</span>
-          <div style={{ whiteSpace: "nowrap" }}>{getStatusPill()}</div>
+          <span className="docket-number" style={{ whiteSpace: "nowrap", flexShrink: 0 }}>{caseNumber}</span>
+          <div style={{ whiteSpace: "nowrap", flexShrink: 0 }}>{getStatusPill()}</div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "12px", whiteSpace: "nowrap", flexShrink: 0 }}>
           {/* History Feature Button */}
-          <button className="btn-outline-brass" onClick={handleOpenHistory} title="View Previous Case History">
+          <button className="btn-outline-brass" onClick={handleOpenHistory} title="View Previous Case History" style={{ flexShrink: 0 }}>
             📜 Case History
           </button>
 
           {threadId && (
-            <button className="btn-outline-brass" onClick={handleStartNewCase}>
+            <button className="btn-outline-brass" onClick={handleStartNewCase} style={{ flexShrink: 0 }}>
               ➕ New Case
             </button>
           )}
 
-          <span className="font-mono text-muted" style={{ fontSize: "0.75rem", opacity: 0.85 }}>
+          <span className="font-mono text-muted" style={{ fontSize: "0.75rem", opacity: 0.85, flexShrink: 0 }}>
             {currentTime}
           </span>
 
-          <button className="btn-theme-toggle" onClick={toggleTheme} title="Switch UI Theme Preference">
+          <button className="btn-theme-toggle" onClick={toggleTheme} title="Switch UI Theme Preference" style={{ flexShrink: 0 }}>
             {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
           </button>
 
@@ -383,7 +383,7 @@ export default function Home() {
             onClick={handleLogout}
             className="px-3 py-1.5 rounded text-xs font-mono font-semibold border border-[var(--line)] text-red-400 hover:bg-red-500 hover:text-white transition cursor-pointer"
             title="Sign Out of Session"
-            style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: "4px", flexShrink: 0 }}
           >
             🚪 Logout ({user ? user.name.split(" ")[0] : "User"})
           </button>

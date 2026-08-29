@@ -349,26 +349,18 @@ export default function Home() {
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)" }}>
       {/* Top Header Bar */}
       <header className="docket-topbar">
-        <div className="docket-title-group">
-          <h1 className="font-serif text-brass" style={{ fontSize: "1.25rem", margin: 0, letterSpacing: "0.5px" }}>
-            ⚖️ LEXAGENT COURTROOM TERMINAL
+        <div className="docket-title-group" style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
+          <h1 className="font-serif text-brass" style={{ fontSize: "1.15rem", margin: 0, letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
+            ⚖️ LEXAGENT COURTROOM
           </h1>
-          <span className="docket-number">{caseNumber}</span>
-          {getStatusPill()}
+          <span className="docket-number" style={{ whiteSpace: "nowrap" }}>{caseNumber}</span>
+          <div style={{ whiteSpace: "nowrap" }}>{getStatusPill()}</div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", whiteSpace: "nowrap", flexShrink: 0 }}>
           {/* History Feature Button */}
           <button className="btn-outline-brass" onClick={handleOpenHistory} title="View Previous Case History">
             📜 Case History
-          </button>
-
-          <span className="font-mono text-muted" style={{ fontSize: "0.78rem" }}>
-            {currentTime}
-          </span>
-
-          <button className="btn-theme-toggle" onClick={toggleTheme} title="Switch UI Theme Preference">
-            {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
           </button>
 
           {threadId && (
@@ -377,11 +369,20 @@ export default function Home() {
             </button>
           )}
 
+          <span className="font-mono text-muted" style={{ fontSize: "0.75rem", opacity: 0.85 }}>
+            {currentTime}
+          </span>
+
+          <button className="btn-theme-toggle" onClick={toggleTheme} title="Switch UI Theme Preference">
+            {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
+          </button>
+
           {/* User Profile & Logout Button */}
           <button
             onClick={handleLogout}
             className="px-3 py-1.5 rounded text-xs font-mono font-semibold border border-[var(--line)] text-red-400 hover:bg-red-500 hover:text-white transition cursor-pointer"
             title="Sign Out of Session"
+            style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
           >
             🚪 Logout ({user ? user.name.split(" ")[0] : "User"})
           </button>

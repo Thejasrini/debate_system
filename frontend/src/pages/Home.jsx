@@ -544,6 +544,11 @@ export default function Home() {
         {/* Question & Continuous Proof Submission Box */}
         <QuestionBox onSubmit={handleStartStream} loading={isAnalyzing} isFollowUp={Boolean(threadId || judge)} />
 
+        {/* ALWAYS VISIBLE DEBATE ANALYSIS GRAPH (Empty state before debate, loading during, live bar chart after) */}
+        <div style={{ margin: "24px 0 32px 0" }}>
+          <DebateAnalysisGraph supportData={support} opposeData={oppose} judgeData={judge} loading={isAnalyzing} />
+        </div>
+
         <hr className="hairline-divider" />
 
         {/* Error Banner */}
@@ -639,9 +644,6 @@ export default function Home() {
             {(support || oppose || judge) && (
               <BalanceBar position={getBalancePosition()} label="Evidentiary Balance of Probability" animated={true} />
             )}
-
-            {/* Debate Analysis Bar Chart (Support -> Oppose -> Judge Pipeline) */}
-            <DebateAnalysisGraph supportData={support} opposeData={oppose} judgeData={judge} loading={isAnalyzing} />
 
             {/* Dual Counsel Arguments */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>

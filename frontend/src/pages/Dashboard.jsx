@@ -58,35 +58,13 @@ export default function Dashboard() {
 
       <main style={{ flex: 1, maxWidth: "1200px", margin: "0 auto", padding: "40px 24px", width: "100%", boxSizing: "border-box" }}>
         {/* Header Title Section */}
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "20px", borderBottom: "1px solid var(--line)", paddingBottom: "24px", marginBottom: "28px" }}>
-          <div>
-            <h1 className="font-serif text-brass" style={{ fontSize: "2.2rem", margin: "0 0 6px 0", letterSpacing: "0.5px" }}>
-              Consumer Case Dashboard
-            </h1>
-            <p className="font-mono text-muted" style={{ fontSize: "0.88rem", margin: 0 }}>
-              Manage and review your statutory dispute history under Consumer Protection Act 2019
-            </p>
-          </div>
-
-          <Link
-            to="/new-case"
-            className="font-mono"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "12px 20px",
-              borderRadius: "8px",
-              backgroundColor: "var(--brass)",
-              color: "var(--bg)",
-              textDecoration: "none",
-              fontSize: "0.85rem",
-              fontWeight: "bold",
-              boxShadow: "0 4px 14px rgba(201, 164, 94, 0.3)"
-            }}
-          >
-            ➕ File New Case
-          </Link>
+        <div style={{ borderBottom: "1px solid var(--line)", paddingBottom: "24px", marginBottom: "28px" }}>
+          <h1 className="font-serif text-brass" style={{ fontSize: "2.2rem", margin: "0 0 6px 0", letterSpacing: "0.5px" }}>
+            Consumer Case Dashboard
+          </h1>
+          <p className="font-mono text-muted" style={{ fontSize: "0.88rem", margin: 0 }}>
+            Manage and review your statutory dispute history under Consumer Protection Act 2019
+          </p>
         </div>
 
         <ErrorBanner message={error} onClose={() => setError(null)} />
@@ -151,11 +129,11 @@ export default function Dashboard() {
               {searchTerm ? "No case matches your search filter." : "You have not submitted any consumer disputes yet."}
             </p>
             <Link
-              to="/new-case"
-              className="btn-brass"
+              to="/courtroom"
+              className="btn-brass font-mono"
               style={{ display: "inline-block", padding: "12px 24px", fontSize: "0.88rem", textDecoration: "none" }}
             >
-              File Your First Case →
+              Open Courtroom Terminal →
             </Link>
           </div>
         ) : (

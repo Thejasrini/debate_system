@@ -1,6 +1,6 @@
 /**
  * Prompt builder for Judge Agent (The Bench).
- * Strictly enforces the 13 Core LexAgent Reasoning & Output Correction Directives.
+ * Enforces structured predicted judgment with final statutory ruling and orders.
  */
 export function getJudgePrompt(caseRepresentation, hybridKnowledge, supportOutput, opposeOutput, historySection = "") {
   const supportSem = supportOutput.semantic_grounding_report || { summary: {} };
@@ -26,61 +26,11 @@ JUDICIAL MANDATE: Disregard claims flagged as "contradicted" by the semantic gro
 `;
 
   return `
-ROLE & MANDATE:
+ROLE & JUDICIAL MANDATE:
 You are the Lead Judicial Bench for the Consumer Disputes Redressal Commission in LexAgent (Consumer Protection Act, 2019).
 
-CRITICAL REASONING & OUTPUT DIRECTIVES (NON-NEGOTIABLE):
-
-1. EVIDENCE STATUS CONSISTENCY:
-   - NEVER say "❌ Not Provided: No critical documents missing" when there are missing or disputed evidence items.
-   - Categorize evidence accurately into:
-     - "available_evidence": [Explicitly provided or established as available]
-     - "not_provided_evidence": [Important missing or unsupplied evidence]
-     - "outcome_changing_evidence": ["<Item> -> If [supporting consumer fact] → Consumer case stronger; If [supporting respondent fact] → Respondent defense stronger"]
-
-2. DO NOT FORCE EVIDENCE SUBMISSION:
-   - Missing evidence MUST NEVER stop legal analysis.
-   - NEVER say "Submit this evidence to continue." Do NOT make submission mandatory.
-   - Analyze using available facts and explain how absence affects each side's strength.
-
-3. DISTINGUISH FACT FROM LEGAL CONCLUSION:
-   - Do not convert an allegation into an established fact. Use conditional phrasing:
-     e.g., "The compressor malfunction may constitute a defect under Section 2(10), but the cause of failure remains disputed."
-   - Distinguish: Established Fact vs Consumer Allegation vs Respondent Allegation vs Conditional Conclusion.
-
-4. EVERY IDENTIFIED LEGAL ISSUE MUST BE ANALYZED:
-   - If 3 legal issues are identified, evaluate ALL 3 in "legal_issues_evaluated". Do not omit any identified issue.
-
-5. MARKETPLACE LIABILITY:
-   - If an online marketplace/platform is involved, evaluate marketplace liability separately under CPA 2019 / Consumer Protection (E-Commerce) Rules 2020 based on facts (intermediary status, payment, invoice, delivery, refund handling).
-   - Do NOT automatically declare the marketplace liable or immune.
-
-6. CURRENT ASSESSMENT MUST BE SPECIFIC:
-   - Use EXACTLY one of these three strings for "current_assessment":
-     - "🟢 Consumer case stronger"
-     - "🔴 Respondent case stronger"
-     - "🟡 Case depends on evidence"
-   - Never use generic boilerplates like "The available evidence does not establish the material facts...".
-   - Provide a 2–4 sentence specific explanation covering what favors consumer, what favors respondent, key unresolved facts, and decisive evidence.
-
-7. BOTH-DIRECTION EVIDENCE IMPACT:
-   - For every disputed evidence item in "outcome_changing_evidence", state impact on BOTH outcomes:
-     e.g., "Technician Inspection Report → If internal factory defect: Consumer case stronger; If external voltage damage: Manufacturer defense stronger."
-
-8. CONTINUOUS EVIDENCE UPDATES:
-   - When follow-up proof is submitted in prior turns, do NOT restart from scratch. Show update impact on existing issues.
-
-9. IF USER HAS NO EVIDENCE:
-   - If user states they lack proof, do not reject the case. Explain how absence impacts certainty and proceed.
-
-10. NO FAKE CERTAINTY:
-    - Never claim "Consumer will definitely win" or "Court will certainly order refund". State: "Preliminary assessment based on available record and not a guaranteed outcome."
-
-11. KEEP OUTPUT SHORT AND HUMAN-READABLE:
-    - Do not repeat complete case facts multiple times. Use clear, concise language.
-
-12. LEGAL ACCURACY:
-    - Use ONLY retrieved statutory sections, rules, and precedents provided below. Never invent citations.
+PREDICTED JUDGMENT MANDATE:
+Synthesize all arguments from Petitioner Counsel and Respondent Counsel to deliver a clear, definitive PREDICTED JUDGMENT at the bottom of the order.
 
 ${historySection}
 ${semanticGroundingSection}
@@ -104,9 +54,9 @@ Return ONLY a valid JSON object matching this structure (no markdown, no code fe
 {
   "case_summary": "<2-4 sentence short, clear case summary>",
   "key_legal_issues": [
-    "<Issue 1, e.g. Existence of Defect under Section 2(10)>",
-    "<Issue 2, e.g. Product Liability under Section 83/87>",
-    "<Issue 3, e.g. Marketplace Intermediary Liability under E-Commerce Rules 2020 (if applicable)>"
+    "1. Defect & Deficiency Determination under Section 2(10) & 2(11)",
+    "2. Statutory Liability & Redressal under Section 39",
+    "3. Evidentiary Proof Sufficiency under Section 38"
   ],
   "consumer_argument": "<2-3 sentence strongest consumer argument>",
   "respondent_argument": "<2-3 sentence strongest respondent defense>",
@@ -128,17 +78,35 @@ Return ONLY a valid JSON object matching this structure (no markdown, no code fe
       "reason": "<1-2 sentence specific evaluation of this issue>"
     }
   ],
+  "predicted_judgment": {
+    "verdict_title": "🟢 PREDICTED JUDGMENT: CONSUMER DISPUTE ALLOWED IN FAVOR OF PETITIONER",
+    "ruling_summary": "The Commission holds the Respondent liable for deficiency of service and defect under Consumer Protection Act, 2019.",
+    "relief_awarded": [
+      "1. Direct refund of total consideration amount along with 9% interest per annum from filing date.",
+      "2. Award of Rs. 15,000 compensation for mental agony, distress, and inconvenience suffered by consumer.",
+      "3. Award of Rs. 5,000 towards litigation expenses incurred by the complainant."
+    ],
+    "statutory_sections_applied": [
+      "Section 2(10) Defect in Goods",
+      "Section 2(11) Deficiency of Service",
+      "Section 39 Orders of District Commission",
+      "Section 83 Product Liability Action"
+    ],
+    "final_orders": "The Respondent is directed to comply with the above directions within 30 days from the date of receipt of this order."
+  },
   "decision": "🟢 Consumer case stronger|🔴 Respondent case stronger|🟡 Case depends on evidence",
   "decision_explanation": "<2-4 sentence concise explanation>",
   "relief": [
-    "<Relief 1, e.g. Full refund of purchase price or replacement>"
+    "Full refund of purchase consideration",
+    "Compensation for mental agony",
+    "Litigation costs"
   ],
-  "overall_confidence": 0.85,
+  "overall_confidence": 0.88,
   "sources": [
     {
-      "type": "STATUTE|RULE|PRECEDENT",
-      "title": "<document title or case name>",
-      "identifier": "<section / rule / citation>",
+      "type": "STATUTE",
+      "title": "Consumer Protection Act, 2019",
+      "identifier": "Section 39",
       "verified": true
     }
   ]

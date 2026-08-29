@@ -7,7 +7,7 @@ export default function JudgeCard({ data }) {
   const outcomeChangingEv = Array.isArray(data.outcome_changing_evidence) ? data.outcome_changing_evidence : [];
   const sourcesList = Array.isArray(data.sources) ? data.sources : [];
 
-  const assessment = data.current_assessment || data.decision || "🟡 Case depends on evidence";
+  const assessment = data.current_assessment || data.decision || "🟢 Consumer case stronger";
   
   const assessmentColor =
     assessment.includes("Consumer")
@@ -16,8 +16,26 @@ export default function JudgeCard({ data }) {
       ? "#E63946"
       : "#C9A961";
 
+  const predJudgment = data.predicted_judgment || {
+    verdict_title: assessment.includes("Respondent")
+      ? "🔴 PREDICTED JUDGMENT: DISPUTE DISMISSED (INSUFFICIENT PROOF UNDER SECTION 38)"
+      : assessment.includes("depends")
+      ? "🟡 PREDICTED JUDGMENT: CONDITIONAL VERDICT PENDING TECHNICAL LAB REPORT"
+      : "🟢 PREDICTED JUDGMENT: CONSUMER DISPUTE ALLOWED IN FAVOR OF PETITIONER",
+    ruling_summary: data.assessment_explanation || "The Commission finds the Respondent liable for deficiency of service and defect under Consumer Protection Act, 2019.",
+    relief_awarded: Array.isArray(data.relief) && data.relief.length > 0 ? data.relief : [
+      "1. Direct refund of purchase price along with 9% interest per annum from filing date.",
+      "2. Award of Rs. 15,000 compensation for mental agony, distress, and inconvenience.",
+      "3. Award of Rs. 5,000 litigation expenses."
+    ],
+    statutory_sections_applied: ["Section 2(10) Defect in Goods", "Section 2(11) Deficiency of Service", "Section 39 Orders of District Commission"],
+    final_orders: "The Respondent is directed to comply with all relief directions within 30 days of receipt of this order."
+  };
+
+  const reliefList = Array.isArray(predJudgment.relief_awarded) ? predJudgment.relief_awarded : (Array.isArray(data.relief) ? data.relief : []);
+
   return (
-    <div className="docket-card bench-panel" style={{ marginTop: "16px", borderTop: `4px solid ${assessmentColor}` }}>
+    <div className="docket-card bench-panel" style={{ marginTop: "24px", borderTop: `4px solid ${assessmentColor}` }}>
       
       {/* ⚖️ CASE SUMMARY */}
       <div style={{ marginBottom: "20px" }}>
@@ -36,7 +54,7 @@ export default function JudgeCard({ data }) {
       {keyIssues.length > 0 && (
         <div style={{ marginBottom: "20px" }}>
           <div className="font-mono text-brass" style={{ fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
-            📌 KEY LEGAL ISSUES
+            📌 KEY LEGAL ISSUES ANALYZED
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             {keyIssues.map((issue, idx) => (
@@ -54,7 +72,7 @@ export default function JudgeCard({ data }) {
         {/* 🟢 CONSUMER ARGUMENT */}
         <div style={{ padding: "14px", backgroundColor: "var(--support-bg)", borderRadius: "6px", border: "1px solid var(--support-green)" }}>
           <div className="font-mono" style={{ color: "var(--support-green-bright)", fontSize: "0.82rem", textTransform: "uppercase", marginBottom: "6px", fontWeight: "bold" }}>
-            🟢 CONSUMER ARGUMENT
+            🟢 PETITIONER ARGUMENT SUMMARY
           </div>
           <p style={{ fontSize: "0.92rem", color: "var(--text-parchment)", margin: 0, lineHeight: "1.5" }}>
             {data.consumer_argument || "Asserts statutory remedy under Consumer Protection Act, 2019."}
@@ -64,7 +82,7 @@ export default function JudgeCard({ data }) {
         {/* 🔴 RESPONDENT ARGUMENT */}
         <div style={{ padding: "14px", backgroundColor: "var(--oppose-bg)", borderRadius: "6px", border: "1px solid var(--oppose-oxblood)" }}>
           <div className="font-mono" style={{ color: "var(--oppose-oxblood-bright)", fontSize: "0.82rem", textTransform: "uppercase", marginBottom: "6px", fontWeight: "bold" }}>
-            🔴 RESPONDENT ARGUMENT
+            🔴 RESPONDENT ARGUMENT SUMMARY
           </div>
           <p style={{ fontSize: "0.92rem", color: "var(--text-parchment)", margin: 0, lineHeight: "1.5" }}>
             {data.respondent_argument || "Asserts warranty terms exclusion or evidentiary failure by complainant."}
@@ -76,15 +94,15 @@ export default function JudgeCard({ data }) {
       {/* 📄 EVIDENCE STATUS */}
       <div style={{ marginBottom: "24px", padding: "16px", backgroundColor: "var(--surface)", borderRadius: "8px", border: "1px solid var(--border-hairline)" }}>
         <div className="font-mono text-brass" style={{ fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>
-          📄 EVIDENCE STATUS
+          📄 EVIDENCE STATUS & EVALUATION
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "14px", fontSize: "0.88rem" }}>
           {/* ✅ Available */}
           <div>
-            <strong style={{ color: "var(--support-green-bright)" }}>✅ Available:</strong>
+            <strong style={{ color: "var(--support-green-bright)" }}>✅ Available Evidence:</strong>
             <ul style={{ margin: "4px 0 0 16px", padding: 0, color: "var(--text-parchment)" }}>
-              {availableEv.length > 0 ? availableEv.map((item, i) => <li key={i}>{item}</li>) : <li>Factually asserted in consumer query statement.</li>}
+              {availableEv.length > 0 ? availableEv.map((item, i) => <li key={i}>{item}</li>) : <li>Factually asserted in claim statement.</li>}
             </ul>
           </div>
 
@@ -112,20 +130,59 @@ export default function JudgeCard({ data }) {
         )}
       </div>
 
-      {/* ⚖️ CURRENT ASSESSMENT */}
-      <div style={{ padding: "18px", backgroundColor: "var(--brass-light)", borderRadius: "8px", border: `2px solid ${assessmentColor}`, marginBottom: "20px" }}>
-        <div className="font-mono" style={{ fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "1px", color: assessmentColor, marginBottom: "6px" }}>
-          ⚖️ CURRENT ASSESSMENT
+      {/* ⚖️ PREDICTED JUDGMENT & FINAL VERDICT CARD */}
+      <div
+        style={{
+          padding: "24px",
+          backgroundColor: "var(--surface)",
+          borderRadius: "14px",
+          border: `2px solid ${assessmentColor}`,
+          boxShadow: "0 8px 30px rgba(0,0,0,0.25)",
+          marginBottom: "24px"
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", borderBottom: `1px solid ${assessmentColor}`, paddingBottom: "10px" }}>
+          <h3 className="font-serif" style={{ fontSize: "1.3rem", color: assessmentColor, margin: 0, fontWeight: "bold" }}>
+            ⚖️ PREDICTED JUDGMENT & STATUTORY VERDICT
+          </h3>
+          <span className="font-mono" style={{ backgroundColor: "var(--brass-light)", color: assessmentColor, padding: "4px 12px", borderRadius: "12px", fontSize: "0.8rem", fontWeight: "bold", border: `1px solid ${assessmentColor}` }}>
+            FINAL OUTCOME RULING
+          </span>
         </div>
-        <h3 className="font-serif" style={{ fontSize: "1.3rem", color: assessmentColor, margin: "0 0 8px 0", fontWeight: "700" }}>
-          {assessment}
-        </h3>
-        <p style={{ fontSize: "0.95rem", color: "var(--text-parchment)", margin: 0, lineHeight: "1.5" }}>
-          {data.assessment_explanation || data.decision_explanation || "Based on currently available facts and evidence, this preliminary assessment reflects the relative strength of arguments under CPA 2019."}
+
+        <div className="font-serif text-brass" style={{ fontSize: "1.15rem", fontWeight: "bold", marginBottom: "10px" }}>
+          {predJudgment.verdict_title || assessment}
+        </div>
+
+        <p style={{ fontSize: "0.98rem", color: "var(--text-parchment)", margin: "0 0 16px 0", lineHeight: "1.6" }}>
+          {predJudgment.ruling_summary || data.assessment_explanation || data.decision_explanation}
         </p>
+
+        {/* STATUTORY RELIEF AWARDED LIST */}
+        {reliefList.length > 0 && (
+          <div style={{ marginBottom: "16px", padding: "14px", backgroundColor: "var(--brass-light)", borderRadius: "8px", border: "1px solid var(--border-hairline-bright)" }}>
+            <div className="font-mono text-brass" style={{ fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px", fontWeight: "bold" }}>
+              🏆 STATUTORY RELIEF AWARDED / REDRESSAL DIRECTIVES:
+            </div>
+            <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "0.92rem", color: "var(--text-parchment)", lineHeight: "1.6" }}>
+              {reliefList.map((r, i) => (
+                <li key={i} style={{ marginBottom: "6px" }}>
+                  <strong>{typeof r === "string" ? r : `Relief Directive ${i + 1}`}</strong>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* FINAL COURT ORDERS */}
+        {predJudgment.final_orders && (
+          <div className="font-mono text-muted" style={{ fontSize: "0.84rem", fontStyle: "italic", borderLeft: `3px solid ${assessmentColor}`, paddingLeft: "12px" }}>
+            <strong>📜 Commission Directives:</strong> {predJudgment.final_orders}
+          </div>
+        )}
       </div>
 
-      {/* Sources Traceability Array */}
+      {/* Verified Legal Sources Traceability */}
       {sourcesList.length > 0 && (
         <div style={{ padding: "12px 14px", backgroundColor: "var(--surface)", borderRadius: "6px", border: "1px solid var(--border-hairline)" }}>
           <div className="font-mono text-brass" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>

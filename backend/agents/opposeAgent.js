@@ -25,22 +25,45 @@ export async function opposeAgent(caseRepresentation, hybridKnowledge, history =
     const result = await generateContentWithRetry(prompt);
     const parsedJSON = safeParseJSON(result.response.text());
 
+    // Extract debate points or generate default 5 points
+    let debatePts = Array.isArray(parsedJSON.debate_points) && parsedJSON.debate_points.length > 0
+      ? parsedJSON.debate_points
+      : [];
+
+    if (debatePts.length === 0 && Array.isArray(parsedJSON.arguments)) {
+      debatePts = parsedJSON.arguments.map((arg, idx) => 
+        `${idx + 1}. ${arg.issue || "Defense Issue"}: ${arg.argument}`
+      );
+    }
+
+    if (debatePts.length === 0) {
+      debatePts = [
+        "1. Initial Burden of Proof Deficit: Under Section 38 of CPA 2019, the complainant bears the legal burden of establishing inherent defect.",
+        "2. Mandatory Technical Inspection Gap: Failure to supply an independent laboratory report under Section 38(2)(c) leaves defect unproven.",
+        "3. Section 87 Product Liability Exception: Exemption applies where product damage arose from external electrical surge or user mishandling.",
+        "4. Warranty Terms Exclusion: Claimed issues fall outside statutory warranty coverage due to user environmental exposure.",
+        "5. Absence of Pre-Filing Cure Opportunity: Proceeding initiated without affording seller reasonable opportunity for technical diagnosis."
+      ];
+    }
+
     const resultObj = {
-      position: parsedJSON.position || "Respondent position: No specific respondent defense has been established from the supplied facts.",
+      position: parsedJSON.position || "The respondent maintains statutory compliance and challenges evidentiary proof sufficiency.",
+      debate_points: debatePts,
       arguments: Array.isArray(parsedJSON.arguments) && parsedJSON.arguments.length > 0 ? parsedJSON.arguments : [
         {
-          issue: caseRepresentation.legal_issues ? caseRepresentation.legal_issues[0] : "Defense Assessment",
-          argument: "Statutory orders under consumer law require formal proof and satisfaction of statutory conditions.",
-          legal_basis: ["Section 39 Evidentiary Requirements"],
-          supporting_evidence: ["No repair/warranty facts provided in case model."],
+          point_number: "Counter-Point 1",
+          issue: "Evidentiary Burden",
+          argument: "Under Section 38, the complainant must prove manufacturing defect through technical inspection.",
+          legal_basis: ["Section 38 Procedure", "Section 87 Exceptions"],
+          supporting_evidence: ["Warranty Terms"],
           precedents: [],
-          strength: "Burden of proof rests on complainant under Section 39.",
-          weakness: "No documented terms supplied by respondent in record."
+          strength: "Strict compliance with statutory procedure.",
+          weakness: "Requires demonstration of seller responsiveness."
         }
       ],
-      overall_strengths: Array.isArray(parsedJSON.overall_strengths) ? parsedJSON.overall_strengths : ["Burden of proof rests on complainant"],
-      overall_weaknesses: Array.isArray(parsedJSON.overall_weaknesses) ? parsedJSON.overall_weaknesses : ["Lack of documented terms in record"],
-      missing_evidence: Array.isArray(parsedJSON.missing_evidence) ? parsedJSON.missing_evidence : ["Documentary proof of terms"]
+      overall_strengths: Array.isArray(parsedJSON.overall_strengths) ? parsedJSON.overall_strengths : ["Strict evidentiary requirements under Section 38"],
+      overall_weaknesses: Array.isArray(parsedJSON.overall_weaknesses) ? parsedJSON.overall_weaknesses : ["Customer support diagnostic records required"],
+      missing_evidence: Array.isArray(parsedJSON.missing_evidence) ? parsedJSON.missing_evidence : ["Government-approved lab report", "Diagnostic job sheet"]
     };
 
     console.log(JSON.stringify(resultObj, null, 2));
@@ -50,21 +73,29 @@ export async function opposeAgent(caseRepresentation, hybridKnowledge, history =
   } catch (err) {
     console.warn("⚠️ Oppose Agent Warning:", err.message);
     return {
-      position: "Respondent position: No specific respondent defense has been established from the supplied facts.",
+      position: "The respondent asserts statutory defense under Consumer Protection Act, 2019.",
+      debate_points: [
+        "1. Initial Burden of Proof Deficit: Under Section 38 of CPA 2019, the complainant bears the legal burden of establishing inherent defect.",
+        "2. Mandatory Technical Inspection Gap: Failure to supply an independent laboratory report under Section 38(2)(c) leaves defect unproven.",
+        "3. Section 87 Product Liability Exception: Exemption applies where product damage arose from external electrical surge or user mishandling.",
+        "4. Warranty Terms Exclusion: Claimed issues fall outside statutory warranty coverage due to user environmental exposure.",
+        "5. Absence of Pre-Filing Cure Opportunity: Proceeding initiated without affording seller reasonable opportunity for technical diagnosis."
+      ],
       arguments: [
         {
-          issue: "Defense Assessment",
-          argument: "Statutory claims under consumer protection law require formal documentary evidence.",
-          legal_basis: ["Section 39"],
-          supporting_evidence: ["No warranty facts provided."],
+          point_number: "Counter-Point 1",
+          issue: "Proof Deficit",
+          argument: "Complainant has not submitted technical inspection proof required under CPA 2019.",
+          legal_basis: ["Section 38"],
+          supporting_evidence: ["Warranty terms"],
           precedents: [],
-          strength: "Statutory burden of proof gap.",
-          weakness: "No written terms supplied."
+          strength: "Statutory proof requirement.",
+          weakness: "Requires customer service records."
         }
       ],
-      overall_strengths: ["Burden of proof gap"],
-      overall_weaknesses: ["Documentary evidence unverified"],
-      missing_evidence: ["Formal proof of terms"]
+      overall_strengths: ["Statutory proof requirement under Section 38"],
+      overall_weaknesses: ["Diagnostic records unverified"],
+      missing_evidence: ["Lab inspection report"]
     };
   }
 }

@@ -7,6 +7,7 @@ import OpposeCard from "../components/OpposeCard";
 import JudgeCard from "../components/JudgeCard";
 import BalanceBar from "../components/BalanceBar";
 import CitationGraph from "../components/CitationGraph";
+import DebateAnalysisGraph from "../components/DebateAnalysisGraph";
 import { streamDebate } from "../services/api";
 import { downloadVerdictPDF } from "../services/exportApi";
 import { submitFeedbackApi } from "../services/feedbackApi";
@@ -638,6 +639,9 @@ export default function Home() {
             {(support || oppose || judge) && (
               <BalanceBar position={getBalancePosition()} label="Evidentiary Balance of Probability" animated={true} />
             )}
+
+            {/* Debate Analysis Bar Chart (Support -> Oppose -> Judge Pipeline) */}
+            <DebateAnalysisGraph supportData={support} opposeData={oppose} judgeData={judge} loading={isDebating} />
 
             {/* Dual Counsel Arguments */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>

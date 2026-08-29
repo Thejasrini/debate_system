@@ -120,6 +120,22 @@ export async function runDebate(question, customContext = "", onEvent = null, hi
   support.semantic_grounding_report = supportSemanticReport;
   oppose.semantic_grounding_report = opposeSemanticReport;
 
+  // Calculate normalized 0-100 scores
+  const supportScore = Math.min(100, Math.max(10,
+    78 + Math.min(12, (support.applicable_sections || []).length * 4) +
+    (supportSemanticReport?.summary?.entailed || 0) * 3 -
+    ((support.grounding_report?.fabricated_sources || []).length * 15)
+  ));
+
+  const opposeScore = Math.min(100, Math.max(10,
+    72 + Math.min(12, (oppose.applicable_sections || []).length * 4) +
+    (opposeSemanticReport?.summary?.entailed || 0) * 3 -
+    ((oppose.grounding_report?.fabricated_sources || []).length * 15)
+  ));
+
+  support.score = supportScore;
+  oppose.score = opposeScore;
+
   emit("support", support);
   emit("oppose", oppose);
   emit("semanticGrounding", { support: supportSemanticReport, oppose: opposeSemanticReport });
@@ -132,7 +148,18 @@ export async function runDebate(question, customContext = "", onEvent = null, hi
   const judgeSemanticReport = await semanticValidate("Judge", judge, retrievedContext);
   judge.semantic_grounding_report = judgeSemanticReport;
 
+  const rawJudgeConf = typeof judge.overall_confidence === "number" ? judge.overall_confidence : 0.85;
+  const judgeScore = Math.min(100, Math.max(10, Math.round(rawJudgeConf * 100)));
+  judge.score = judgeScore;
+
+  const scores = {
+    supportScore,
+    opposeScore,
+    judgeScore
+  };
+
   emit("judge", judge);
+  emit("scores", scores);
 
   emit("done", {});
 
@@ -145,6 +172,7 @@ export async function runDebate(question, customContext = "", onEvent = null, hi
     retrievedContext,
     support,
     oppose,
-    judge
+    judge,
+    scores
   };
 }

@@ -5,6 +5,7 @@ import BalanceBar from "../components/BalanceBar";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorBanner from "../components/ErrorBanner";
 import CitationGraph from "../components/CitationGraph";
+import DebateAnalysisGraph from "../components/DebateAnalysisGraph";
 import { getThreadApi } from "../services/historyApi";
 import { downloadVerdictPDF } from "../services/exportApi";
 import { submitFeedbackApi } from "../services/feedbackApi";
@@ -125,12 +126,15 @@ export default function Verdict() {
           <p className="text-base font-serif text-[var(--ink-muted)] leading-relaxed">{judge?.decision_explanation}</p>
         </div>
 
-        {/* Balance Bar */}
-        <BalanceBar
-          position={judge?.decision?.includes("Consumer") ? -0.7 : judge?.decision?.includes("Respondent") ? 0.7 : 0.0}
-          animated={false}
-          label="Final Adjudicated Balance of Probability"
-        />
+        {/* Balance Bar & Debate Analysis Graph */}
+        <div className="space-y-6">
+          <BalanceBar
+            position={judge?.decision?.includes("Consumer") ? -0.7 : judge?.decision?.includes("Respondent") ? 0.7 : 0.0}
+            animated={false}
+            label="Final Adjudicated Balance of Probability"
+          />
+          <DebateAnalysisGraph supportData={latestTurn?.support} opposeData={latestTurn?.oppose} judgeData={latestTurn?.judge} />
+        </div>
 
         {/* IRAC Sections */}
         <div className="space-y-4">

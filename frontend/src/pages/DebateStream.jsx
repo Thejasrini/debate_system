@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import BalanceBar from "../components/BalanceBar";
+import DebateAnalysisGraph from "../components/DebateAnalysisGraph";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorBanner from "../components/ErrorBanner";
 import { startDebateStream } from "../services/debateApi";
@@ -134,9 +135,12 @@ export default function DebateStream() {
           )}
         </div>
 
-        {/* Balance Bar */}
-        {(supportData || opposeData) && (
-          <BalanceBar position={getBalancePosition()} label="Evidentiary Balance of Probability" />
+        {/* Balance Bar & Debate Analysis Graph */}
+        {(supportData || opposeData || judgeData) && (
+          <div className="space-y-6">
+            <BalanceBar position={getBalancePosition()} label="Evidentiary Balance of Probability" />
+            <DebateAnalysisGraph supportData={supportData} opposeData={opposeData} judgeData={judgeData} loading={!isDone && !judgeData} />
+          </div>
         )}
 
         {/* Adversarial Counsel Cards */}

@@ -105,38 +105,58 @@ export default function Navbar() {
             </h1>
           </Link>
 
-          <span
-            className="font-mono text-brass"
-            style={{
-              padding: "2px 8px",
-              borderRadius: "4px",
-              fontSize: "0.72rem",
-              fontWeight: "bold",
-              backgroundColor: "var(--brass-light)",
-              border: "1px solid var(--line-bright)",
-              whiteSpace: "nowrap",
-              flexShrink: 0
-            }}
-          >
-            CPA/2019/0847
-          </span>
+          {!location.pathname.startsWith("/admin") ? (
+            <>
+              <span
+                className="font-mono text-brass"
+                style={{
+                  padding: "2px 8px",
+                  borderRadius: "4px",
+                  fontSize: "0.72rem",
+                  fontWeight: "bold",
+                  backgroundColor: "var(--brass-light)",
+                  border: "1px solid var(--line-bright)",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0
+                }}
+              >
+                CPA/2019/0847
+              </span>
 
-          <span
-            className="font-mono"
-            style={{
-              padding: "2px 8px",
-              borderRadius: "12px",
-              fontSize: "0.72rem",
-              fontWeight: "bold",
-              backgroundColor: "rgba(16, 185, 129, 0.1)",
-              color: "var(--support-green-bright)",
-              border: "1px solid rgba(16, 185, 129, 0.3)",
-              whiteSpace: "nowrap",
-              flexShrink: 0
-            }}
-          >
-            ● CASE ACTIVE
-          </span>
+              <span
+                className="font-mono"
+                style={{
+                  padding: "2px 8px",
+                  borderRadius: "12px",
+                  fontSize: "0.72rem",
+                  fontWeight: "bold",
+                  backgroundColor: "rgba(16, 185, 129, 0.1)",
+                  color: "var(--support-green-bright)",
+                  border: "1px solid rgba(16, 185, 129, 0.3)",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0
+                }}
+              >
+                ● CASE ACTIVE
+              </span>
+            </>
+          ) : (
+            <span
+              className="font-mono text-brass"
+              style={{
+                padding: "2px 10px",
+                borderRadius: "4px",
+                fontSize: "0.72rem",
+                fontWeight: "bold",
+                backgroundColor: "var(--brass-light)",
+                border: "1px solid var(--line-bright)",
+                whiteSpace: "nowrap",
+                flexShrink: 0
+              }}
+            >
+              👑 ADMIN SYSTEM
+            </span>
+          )}
         </div>
 
         {/* Right Group - Clock, Theme Toggle & Logout */}

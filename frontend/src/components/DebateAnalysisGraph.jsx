@@ -23,7 +23,7 @@ export default function DebateAnalysisGraph({
       : opposeData?.applicable_sections?.length
       ? Math.min(100, Math.max(10, 72 + (opposeData.applicable_sections.length * 4)))
       : opposeData
-      ? 72
+      ? 75
       : null;
 
   const judgeScore =
@@ -61,14 +61,29 @@ export default function DebateAnalysisGraph({
   if (loading) {
     return (
       <div
-        className="p-6 rounded-xl border border-[var(--line)] shadow-lg"
-        style={{ backgroundColor: "var(--surface)", color: "var(--ink)" }}
+        style={{
+          padding: "24px",
+          borderRadius: "12px",
+          border: "1px solid var(--line)",
+          backgroundColor: "var(--surface)",
+          color: "var(--ink)",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.1)"
+        }}
       >
-        <div className="flex items-center justify-between border-b border-[var(--line)] pb-3 mb-4">
-          <h3 className="text-base font-serif font-semibold text-[var(--ink)] flex items-center gap-2">
-            <span>📊</span> Debate Analysis
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderBottom: "1px solid var(--line)",
+            paddingBottom: "12px",
+            marginBottom: "16px"
+          }}
+        >
+          <h3 className="font-serif" style={{ fontSize: "1.05rem", fontWeight: "600", margin: 0, color: "var(--ink)" }}>
+            📊 Debate Analysis
           </h3>
-          <span className="text-xs font-mono text-[var(--brass)]">Score (0–100)</span>
+          <span className="font-mono" style={{ fontSize: "0.75rem", color: "var(--brass)" }}>Score (0–100)</span>
         </div>
         <LoadingSpinner message="Debating legal pipeline & computing agent scores..." />
       </div>
@@ -78,18 +93,35 @@ export default function DebateAnalysisGraph({
   if (!hasData) {
     return (
       <div
-        className="p-6 rounded-xl border border-[var(--line)] shadow-lg space-y-3"
-        style={{ backgroundColor: "var(--surface)", color: "var(--ink)" }}
+        style={{
+          padding: "24px",
+          borderRadius: "12px",
+          border: "1px solid var(--line)",
+          backgroundColor: "var(--surface)",
+          color: "var(--ink)",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.1)"
+        }}
       >
-        <div className="flex items-center justify-between border-b border-[var(--line)] pb-3">
-          <h3 className="text-base font-serif font-semibold text-[var(--ink)] flex items-center gap-2">
-            <span>📊</span> Debate Analysis
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderBottom: "1px solid var(--line)",
+            paddingBottom: "12px",
+            marginBottom: "16px"
+          }}
+        >
+          <h3 className="font-serif" style={{ fontSize: "1.05rem", fontWeight: "600", margin: 0, color: "var(--ink)" }}>
+            📊 Debate Analysis
           </h3>
-          <span className="text-xs font-mono text-[var(--ink-dim)]">Score (0–100)</span>
+          <span className="font-mono" style={{ fontSize: "0.75rem", color: "var(--ink-dim)" }}>Score (0–100)</span>
         </div>
-        <div className="p-8 text-center space-y-2">
-          <p className="text-sm font-serif text-[var(--ink-muted)]">No Active Debate Executed</p>
-          <p className="text-xs font-mono text-[var(--ink-dim)]">
+        <div style={{ padding: "32px 16px", textAlign: "center" }}>
+          <p className="font-serif" style={{ fontSize: "0.95rem", color: "var(--ink-muted)", margin: "0 0 6px 0" }}>
+            No Active Debate Executed
+          </p>
+          <p className="font-mono" style={{ fontSize: "0.75rem", color: "var(--ink-dim)", margin: 0 }}>
             File a dispute case query to generate real-time Support → Oppose → Judge reasoning scores.
           </p>
         </div>
@@ -99,77 +131,165 @@ export default function DebateAnalysisGraph({
 
   return (
     <div
-      className="p-6 rounded-xl border border-[var(--line)] shadow-lg space-y-5"
-      style={{ backgroundColor: "var(--surface)", color: "var(--ink)", width: "100%" }}
+      style={{
+        padding: "24px",
+        borderRadius: "12px",
+        border: "1px solid var(--line)",
+        backgroundColor: "var(--surface)",
+        color: "var(--ink)",
+        width: "100%",
+        boxSizing: "border-box",
+        boxShadow: "0 4px 16px rgba(0,0,0,0.1)"
+      }}
     >
       {/* Header Bar */}
-      <div className="flex flex-wrap items-center justify-between border-b border-[var(--line)] pb-3 gap-2">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderBottom: "1px solid var(--line)",
+          paddingBottom: "12px",
+          marginBottom: "20px",
+          flexWrap: "wrap",
+          gap: "8px"
+        }}
+      >
         <div>
-          <h3 className="text-base font-serif font-semibold text-[var(--ink)] flex items-center gap-2">
-            <span>📊</span> Debate Analysis
+          <h3 className="font-serif" style={{ fontSize: "1.1rem", fontWeight: "600", margin: 0, color: "var(--ink)" }}>
+            📊 Debate Analysis
           </h3>
-          <p className="text-xs font-mono text-[var(--ink-muted)] mt-0.5">
+          <p className="font-mono text-muted" style={{ fontSize: "0.75rem", margin: "4px 0 0 0" }}>
             Support Agent → Oppose Agent → Final Judicial Bench Reasoning Pipeline
           </p>
         </div>
-        <span className="text-xs font-mono text-[var(--brass)] px-3 py-1 rounded bg-[var(--brass-light)] border border-[var(--line-bright)] font-semibold">
+        <span
+          className="font-mono"
+          style={{
+            fontSize: "0.75rem",
+            color: "var(--brass)",
+            backgroundColor: "var(--brass-light)",
+            padding: "4px 12px",
+            borderRadius: "4px",
+            border: "1px solid var(--line-bright)",
+            fontWeight: "600"
+          }}
+        >
           Score (0–100)
         </span>
       </div>
 
-      {/* Structured Bar Chart Viewport */}
+      {/* Structured 260px Canvas Viewport */}
       <div
-        className="w-full rounded-lg border border-[var(--line)] p-4 relative overflow-hidden"
-        style={{ backgroundColor: "var(--bg)", height: "250px" }}
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "260px",
+          backgroundColor: "var(--bg)",
+          borderRadius: "8px",
+          border: "1px solid var(--line)",
+          overflow: "hidden",
+          padding: "16px 20px 12px 40px",
+          boxSizing: "border-box"
+        }}
       >
-        {/* Y-Axis Gridlines & Scale Ticks */}
-        <div className="absolute inset-0 p-4 flex flex-col justify-between pointer-events-none opacity-25">
-          <div className="border-b border-[var(--line-bright)] w-full flex justify-between">
-            <span className="text-[10px] font-mono text-[var(--ink)] -mt-2">100</span>
-          </div>
-          <div className="border-b border-[var(--line-bright)] w-full flex justify-between">
-            <span className="text-[10px] font-mono text-[var(--ink)] -mt-2">75</span>
-          </div>
-          <div className="border-b border-[var(--line-bright)] w-full flex justify-between">
-            <span className="text-[10px] font-mono text-[var(--ink)] -mt-2">50</span>
-          </div>
-          <div className="border-b border-[var(--line-bright)] w-full flex justify-between">
-            <span className="text-[10px] font-mono text-[var(--ink)] -mt-2">25</span>
-          </div>
-          <div className="border-b border-[var(--line-bright)] w-full flex justify-between">
-            <span className="text-[10px] font-mono text-[var(--ink)] -mt-2">0</span>
-          </div>
+        {/* Y-Axis Gridlines & Left Ticks */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            padding: "16px 16px 36px 12px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            pointerEvents: "none",
+            boxSizing: "border-box"
+          }}
+        >
+          {[100, 75, 50, 25, 0].map((val) => (
+            <div key={val} style={{ display: "flex", alignItems: "center", width: "100%" }}>
+              <span className="font-mono" style={{ fontSize: "0.68rem", color: "var(--ink-dim)", width: "24px", textAlign: "right", marginRight: "8px" }}>
+                {val}
+              </span>
+              <div style={{ flex: 1, borderBottom: "1px stroke var(--line)", opacity: 0.2 }} />
+            </div>
+          ))}
         </div>
 
-        {/* 3 Bar Columns */}
-        <div className="relative z-10 flex items-end justify-around h-full pt-4 pb-2 px-6">
+        {/* 3 Vertical Columns Side-by-Side */}
+        <div
+          style={{
+            position: "relative",
+            zIndex: 2,
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "flex-end",
+            justifyContent: "space-around",
+            height: "100%",
+            width: "100%",
+            boxSizing: "border-box"
+          }}
+        >
           {chartData.map((bar, idx) => (
             <div
               key={idx}
-              className="flex flex-col items-center h-full justify-end group cursor-pointer"
-              style={{ width: "25%", minWidth: "90px" }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                height: "100%",
+                width: "25%",
+                minWidth: "90px"
+              }}
               title={`${bar.name}: ${bar.score}/100 (${bar.description})`}
             >
-              {/* Floating Numeric Score Badge */}
+              {/* Floating Numeric Score Badge Above Bar */}
               <span
-                className="text-xs font-mono font-bold px-2.5 py-0.5 rounded mb-2 transition-transform group-hover:scale-110 shadow"
-                style={{ backgroundColor: bar.color, color: "#ffffff" }}
+                className="font-mono"
+                style={{
+                  fontSize: "0.78rem",
+                  fontWeight: "700",
+                  padding: "3px 10px",
+                  borderRadius: "4px",
+                  backgroundColor: bar.color,
+                  color: "#ffffff",
+                  marginBottom: "8px",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                  whiteSpace: "nowrap"
+                }}
               >
                 {bar.score} / 100
               </span>
 
               {/* Vertical Bar Fill */}
               <div
-                className="w-full rounded-t-lg transition-all duration-700 ease-out group-hover:brightness-110 shadow-md"
                 style={{
-                  height: `${Math.max(10, bar.score)}%`,
+                  width: "48px",
+                  height: `${Math.max(8, bar.score * 0.72)}%`,
                   backgroundColor: bar.color,
-                  minHeight: "16px"
+                  borderRadius: "6px 6px 0 0",
+                  minHeight: "16px",
+                  boxShadow: "0 -2px 8px rgba(0,0,0,0.1)",
+                  transition: "height 0.6s ease"
                 }}
-              ></div>
+              />
 
               {/* X-Axis Label Below Bar */}
-              <span className="text-xs font-mono font-semibold text-[var(--ink)] mt-3 text-center whitespace-nowrap">
+              <span
+                className="font-mono"
+                style={{
+                  fontSize: "0.78rem",
+                  fontWeight: "600",
+                  color: "var(--ink)",
+                  marginTop: "10px",
+                  textAlign: "center",
+                  whiteSpace: "nowrap"
+                }}
+              >
                 {bar.name}
               </span>
             </div>
@@ -177,25 +297,48 @@ export default function DebateAnalysisGraph({
         </div>
       </div>
 
-      {/* Legend Footer Chips */}
-      <div className="flex flex-wrap items-center justify-around gap-4 text-xs font-mono text-[var(--ink-muted)] pt-2 border-t border-[var(--line)]">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-[var(--line)] bg-[var(--surface)]">
-          <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: "#4E9078" }}></span>
-          <span>Support Agent:</span>
-          <strong style={{ color: "var(--ink)" }}>{supportScore || 0} / 100</strong>
-        </div>
-
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-[var(--line)] bg-[var(--surface)]">
-          <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: "#B25A50" }}></span>
-          <span>Oppose Agent:</span>
-          <strong style={{ color: "var(--ink)" }}>{opposeScore || 0} / 100</strong>
-        </div>
-
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-[var(--line)] bg-[var(--surface)]">
-          <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: "#C9A45E" }}></span>
-          <span>Final Judge:</span>
-          <strong style={{ color: "var(--ink)" }}>{judgeScore || 0} / 100</strong>
-        </div>
+      {/* Spaced Legend Footer Row */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-around",
+          alignItems: "center",
+          gap: "16px",
+          marginTop: "20px",
+          paddingTop: "14px",
+          borderTop: "1px solid var(--line)",
+          flexWrap: "wrap"
+        }}
+      >
+        {chartData.map((bar, idx) => (
+          <div
+            key={idx}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "6px 14px",
+              borderRadius: "6px",
+              border: "1px solid var(--line)",
+              backgroundColor: "var(--surface)",
+              fontSize: "0.78rem",
+              fontFamily: "var(--font-mono)"
+            }}
+          >
+            <span
+              style={{
+                width: "10px",
+                height: "10px",
+                borderRadius: "50%",
+                backgroundColor: bar.color,
+                display: "inline-block"
+              }}
+            />
+            <span style={{ color: "var(--ink-muted)" }}>{bar.name}:</span>
+            <strong style={{ color: "var(--ink)" }}>{bar.score} / 100</strong>
+          </div>
+        ))}
       </div>
     </div>
   );

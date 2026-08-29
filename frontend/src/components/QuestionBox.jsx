@@ -79,14 +79,7 @@ export default function QuestionBox({ onSubmit, loading, isFollowUp = false }) {
               }}
             />
 
-            <div className="font-mono text-muted" style={{ fontSize: "0.72rem", marginTop: "4px", opacity: 0.8 }}>
-              💡 <span>Press <strong>Enter</strong> to file & begin debate (<strong>Shift + Enter</strong> for line break)</span>
-            </div>
-
-            <div style={{ marginTop: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-              <div className="font-mono text-muted" style={{ fontSize: "0.78rem", display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ color: "var(--accent-brass)" }}>🛡️ Scope Authority:</span> Consumer Protection Act, 2019
-              </div>
+            <div style={{ marginTop: "14px", display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "12px" }}>
 
               <button
                 type="submit"

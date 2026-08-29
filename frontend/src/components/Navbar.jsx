@@ -46,7 +46,7 @@ export default function Navbar() {
                 How It Works
               </Link>
               <Link to="/profile" className={`navbar-link ${isActive("/profile") ? "active" : ""}`} style={{ color: isActive("/profile") ? "var(--brass)" : "var(--ink-muted)", textDecoration: "none", fontSize: "0.88rem" }}>
-                Profile ({user.name})
+                Profile
               </Link>
               {user.role === "admin" && (
                 <Link to="/admin" className={`navbar-link ${isActive("/admin") ? "active" : ""}`} style={{ color: isActive("/admin") ? "var(--brass)" : "var(--ink-muted)", textDecoration: "none", fontSize: "0.88rem" }}>

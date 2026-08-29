@@ -112,8 +112,8 @@ export default function AboutUs() {
               <span className="font-mono text-muted" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", display: "block", marginBottom: "4px" }}>
                 Official Email Contact
               </span>
-              <a href="mailto:thejasrinim.23aid@kongu.edu" className="font-mono text-brass" style={{ fontSize: "0.92rem", textDecoration: "none", fontWeight: "bold" }}>
-                thejasrinim.23aid@kongu.edu
+              <a href="mailto:legaladmin@gmail.com" className="font-mono text-brass" style={{ fontSize: "0.92rem", textDecoration: "none", fontWeight: "bold" }}>
+                legaladmin@gmail.com
               </a>
             </div>
           </div>

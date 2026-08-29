@@ -60,35 +60,7 @@ export default function Navbar() {
                 Logout
               </button>
             </>
-          ) : (
-            <>
-              <Link to="/how-it-works" className={`navbar-link ${isActive("/how-it-works") ? "active" : ""}`} style={{ color: isActive("/how-it-works") ? "var(--brass)" : "var(--ink-muted)", textDecoration: "none", fontSize: "0.88rem" }}>
-                How It Works
-              </Link>
-              <Link to="/login" className={`navbar-link ${isActive("/login") ? "active" : ""}`} style={{ color: isActive("/login") ? "var(--brass)" : "var(--ink-muted)", textDecoration: "none", fontSize: "0.88rem" }}>
-                Log In
-              </Link>
-              <Link
-                to="/signup"
-                style={{
-                  display: "inline-block",
-                  padding: "7px 18px",
-                  borderRadius: "6px",
-                  backgroundColor: "var(--brass)",
-                  color: "var(--bg)",
-                  textDecoration: "none",
-                  fontSize: "0.85rem",
-                  fontWeight: "700",
-                  fontFamily: "var(--font-sans)",
-                  whiteSpace: "nowrap",
-                  letterSpacing: "0.2px",
-                  boxShadow: "0 2px 8px rgba(201, 164, 94, 0.3)"
-                }}
-              >
-                Sign Up
-              </Link>
-            </>
-          )}
+          ) : null}
 
           <button onClick={toggleTheme} className="theme-toggle-btn font-mono" style={{ padding: "6px 14px", borderRadius: "6px", border: "1px solid var(--line)", backgroundColor: "var(--surface)", color: "var(--ink)", fontSize: "0.82rem", cursor: "pointer" }} title="Toggle Dark/Light Mode">
             {theme === "dark" ? "☀️ Light" : "🌙 Dark"}

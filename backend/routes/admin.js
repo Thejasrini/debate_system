@@ -256,4 +256,21 @@ router.get("/stats/feedback", protect, adminOnly, async (req, res) => {
   }
 });
 
+/**
+ * @route GET /api/admin/feedback/list
+ * @desc Returns full list of user submitted feedback records for admin review
+ */
+router.get("/feedback/list", protect, adminOnly, async (req, res) => {
+  try {
+    const feedbackList = await Feedback.find()
+      .populate("userId", "name email role")
+      .sort({ createdAt: -1 })
+      .lean();
+    return res.status(200).json({ feedback: feedbackList });
+  } catch (err) {
+    console.error("❌ Error fetching admin feedback list:", err.message);
+    return res.status(500).json({ error: "Failed to fetch feedback list." });
+  }
+});
+
 export default router;

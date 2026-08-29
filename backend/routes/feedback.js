@@ -21,7 +21,11 @@ router.post("/", protect, async (req, res) => {
       return res.status(400).json({ error: "Invalid turn index." });
     }
 
-    if (!rating || !["up", "down"].includes(rating)) {
+    let normRating = rating;
+    if (normRating === "thumbs_up") normRating = "up";
+    if (normRating === "thumbs_down") normRating = "down";
+
+    if (!normRating || !["up", "down"].includes(normRating)) {
       return res.status(400).json({ error: "Rating must be 'up' or 'down'." });
     }
 
@@ -29,25 +33,26 @@ router.post("/", protect, async (req, res) => {
       return res.status(400).json({ error: "Comment cannot exceed 500 characters." });
     }
 
-    // Find thread
-    const thread = await Thread.findOne({ threadId });
-    if (!thread) {
-      return res.status(404).json({ error: "Thread not found." });
+    const effectiveThreadId = (threadId && typeof threadId === "string" && threadId.trim()) ? threadId.trim() : "general";
+    const effectiveTurnIndex = (typeof turnIndex === "number" && turnIndex >= 0) ? turnIndex : 0;
+
+    let category = "General Platform Feedback";
+    let confidence = 1.0;
+
+    if (effectiveThreadId !== "general" && effectiveThreadId !== "global") {
+      const thread = await Thread.findOne({ threadId: effectiveThreadId });
+      if (thread && thread.turns && effectiveTurnIndex < thread.turns.length) {
+        const targetTurn = thread.turns[effectiveTurnIndex];
+        category = targetTurn.category || thread.category || "General Consumer Law";
+        confidence = targetTurn.judgeConfidence !== undefined && targetTurn.judgeConfidence !== null
+          ? targetTurn.judgeConfidence
+          : targetTurn.judge?.overall_confidence || 0.70;
+      }
     }
 
-    if (!thread.turns || turnIndex >= thread.turns.length) {
-      return res.status(400).json({ error: "Invalid turn index." });
-    }
-
-    const targetTurn = thread.turns[turnIndex];
-    const category = targetTurn.category || thread.category || "General Consumer Law";
-    const confidence = targetTurn.judgeConfidence !== undefined && targetTurn.judgeConfidence !== null
-      ? targetTurn.judgeConfidence
-      : targetTurn.judge?.overall_confidence || 0.70;
-
-    const filter = { threadId, turnIndex, userId: req.user._id };
+    const filter = { threadId: effectiveThreadId, turnIndex: effectiveTurnIndex, userId: req.user._id };
     const update = {
-      rating,
+      rating: normRating,
       comment: (comment || "").trim(),
       category,
       confidence

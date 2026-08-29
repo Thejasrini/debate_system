@@ -9,7 +9,8 @@ import {
   getDomainStats,
   getConfidenceStats,
   getHallucinationStats,
-  getFeedbackStats
+  getFeedbackStats,
+  getFeedbackListApi
 } from "../services/adminApi";
 import {
   ResponsiveContainer,
@@ -38,6 +39,7 @@ export default function AdminAnalytics() {
   const [confidence, setConfidence] = useState([]);
   const [hallucinations, setHallucinations] = useState(null);
   const [feedback, setFeedback] = useState(null);
+  const [feedbackList, setFeedbackList] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,13 +49,14 @@ export default function AdminAnalytics() {
     setLoading(true);
     setError(null);
     try {
-      const [ov, vol, dom, conf, hal, fb] = await Promise.all([
+      const [ov, vol, dom, conf, hal, fb, fbList] = await Promise.all([
         getOverviewStats(accessToken),
         getVolumeStats(accessToken),
         getDomainStats(accessToken),
         getConfidenceStats(accessToken),
         getHallucinationStats(accessToken),
-        getFeedbackStats(accessToken)
+        getFeedbackStats(accessToken),
+        getFeedbackListApi(accessToken)
       ]);
 
       setOverview(ov);
@@ -62,6 +65,7 @@ export default function AdminAnalytics() {
       setConfidence(conf.confidenceByDay || []);
       setHallucinations(hal);
       setFeedback(fb);
+      setFeedbackList(fbList.feedback || []);
       setLastUpdated(new Date());
     } catch (err) {
       setError(err.response?.data?.error || "Failed to load admin analytics statistics.");
@@ -210,6 +214,75 @@ export default function AdminAnalytics() {
                   </ResponsiveContainer>
                 </div>
               </div>
+            </div>
+
+            {/* 5. User Submitted Feedback Log Table */}
+            <div style={{ padding: "28px", borderRadius: "14px", border: "1px solid var(--line)", backgroundColor: "var(--surface)", boxShadow: "0 4px 18px rgba(0,0,0,0.12)", marginTop: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--line)", paddingBottom: "14px", marginBottom: "20px" }}>
+                <div>
+                  <h3 className="font-serif text-brass" style={{ fontSize: "1.3rem", margin: "0 0 4px 0" }}>
+                    💬 User Submitted Feedback Log ({feedbackList.length})
+                  </h3>
+                  <p className="font-mono text-muted" style={{ fontSize: "0.82rem", margin: 0 }}>
+                    Live feedback and ratings transmitted by users from the About Us portal
+                  </p>
+                </div>
+              </div>
+
+              {feedbackList.length === 0 ? (
+                <p className="font-mono text-muted" style={{ fontSize: "0.88rem", padding: "20px 0", textAlign: "center" }}>
+                  No user feedback submissions logged yet.
+                </p>
+              ) : (
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                    <thead>
+                      <tr style={{ borderBottom: "1px solid var(--line)", textAlign: "left" }}>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>USER</th>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>RATING</th>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>CATEGORY</th>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>COMMENT / FEEDBACK</th>
+                        <th className="font-mono text-muted" style={{ padding: "10px 12px" }}>DATE</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {feedbackList.map((f, i) => (
+                        <tr key={f._id || i} style={{ borderBottom: "1px solid var(--line)" }}>
+                          <td style={{ padding: "12px" }}>
+                            <div className="font-serif" style={{ fontWeight: "600", color: "var(--ink)" }}>{f.userId?.name || "Anonymous User"}</div>
+                            <div className="font-mono text-muted" style={{ fontSize: "0.75rem" }}>{f.userId?.email || f.userId}</div>
+                          </td>
+                          <td style={{ padding: "12px" }}>
+                            <span
+                              className="font-mono"
+                              style={{
+                                padding: "3px 10px",
+                                borderRadius: "4px",
+                                fontSize: "0.78rem",
+                                fontWeight: "bold",
+                                backgroundColor: f.rating === "up" || f.rating === "thumbs_up" ? "var(--support-bg)" : "var(--oppose-bg)",
+                                color: f.rating === "up" || f.rating === "thumbs_up" ? "var(--support-green-bright)" : "var(--oppose-oxblood-bright)",
+                                border: f.rating === "up" || f.rating === "thumbs_up" ? "1px solid rgba(16, 185, 129, 0.3)" : "1px solid rgba(239, 68, 68, 0.3)"
+                              }}
+                            >
+                              {f.rating === "up" || f.rating === "thumbs_up" ? "👍 Positive" : "👎 Needs Impr."}
+                            </span>
+                          </td>
+                          <td className="font-mono text-brass" style={{ padding: "12px", fontSize: "0.8rem" }}>
+                            {f.category || "General Platform Feedback"}
+                          </td>
+                          <td className="font-sans text-muted" style={{ padding: "12px", maxWidth: "300px", lineHeight: "1.4" }}>
+                            {f.comment || <em style={{ opacity: 0.6 }}>No comment provided</em>}
+                          </td>
+                          <td className="font-mono text-muted" style={{ padding: "12px", fontSize: "0.78rem", whiteSpace: "nowrap" }}>
+                            {new Date(f.createdAt).toLocaleDateString()} {new Date(f.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </>
         )}

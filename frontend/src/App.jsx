@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import StyleGuide from "./pages/StyleGuide";
+import AboutUs from "./pages/AboutUs";
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
             />
 
             {/* Information & Design System */}
+            <Route path="/about-us" element={<AboutUs />} />
             <Route path="/style-guide" element={<StyleGuide />} />
 
             {/* Protected User Routes */}

@@ -43,3 +43,10 @@ export async function getFeedbackStats(token) {
   });
   return res.data;
 }
+
+export async function getFeedbackListApi(token) {
+  const res = await axios.get(`http://localhost:5000/api/admin/feedback/list`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return res.data;
+}

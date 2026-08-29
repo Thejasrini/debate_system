@@ -107,10 +107,10 @@ export default function Verdict() {
 
         <ErrorBanner message={error} onClose={() => setError(null)} />
 
-        {/* Citation Graph Visualizer Toggle */}
+        {/* Debate Analysis Graph Visualizer Toggle */}
         {showGraph && (
           <div className="p-6 rounded-xl border border-[var(--line)] bg-[var(--surface)]">
-            <CitationGraph threadId={threadId} />
+            <DebateAnalysisGraph supportData={latestTurn?.support} opposeData={latestTurn?.oppose} judgeData={latestTurn?.judge} />
           </div>
         )}
 

@@ -716,10 +716,10 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Inline D3 Citation Graph Toggle */}
-                    {showGraph && threadId && (
+                    {/* Inline Debate Analysis Graph Toggle */}
+                    {showGraph && (
                       <div className="docket-card">
-                        <CitationGraph threadId={threadId} />
+                        <DebateAnalysisGraph supportData={support} opposeData={oppose} judgeData={judge} loading={isAnalyzing} />
                       </div>
                     )}
 

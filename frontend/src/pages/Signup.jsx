@@ -48,9 +48,11 @@ export default function Signup() {
     } catch (err) {
       const serverMsg = err.response?.data?.error;
       if (serverMsg === "Email already registered.") {
-        setError("This email address is already registered! Please switch to '2. Log In (Existing)' tab to log into your account.");
+        setError("⚠️ This email address is already registered! Please switch to '2. Log In (Existing)' tab above to log in.");
+      } else if (serverMsg === "Invalid email or password.") {
+        setError("⚠️ Invalid email or password. If you haven't created an account yet, please switch to '1. Sign Up (New Account)' tab.");
       } else {
-        setError(serverMsg || err.message || "Authentication failed. Please check your details.");
+        setError(serverMsg || err.message || "Authentication failed. Please check your email & password details.");
       }
     } finally {
       setLoading(false);

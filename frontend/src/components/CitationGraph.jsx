@@ -37,7 +37,7 @@ export default function CitationGraph({ threadId, initialGraphData }) {
     if (!graphData || !graphData.nodes || graphData.nodes.length === 0 || !svgRef.current) return;
 
     const width = 600;
-    const height = 400;
+    const height = 230;
 
     // Clear previous SVG contents
     d3.select(svgRef.current).selectAll("*").remove();
@@ -61,7 +61,7 @@ export default function CitationGraph({ threadId, initialGraphData }) {
     const nodes = graphData.nodes.map((d) => ({ ...d }));
     const links = (graphData.edges || []).map((d) => ({ ...d }));
 
-    // Force simulation
+    // Force simulation tuned for compact layout
     const simulation = d3
       .forceSimulation(nodes)
       .force(
@@ -69,21 +69,21 @@ export default function CitationGraph({ threadId, initialGraphData }) {
         d3
           .forceLink(links)
           .id((d) => d.id)
-          .distance(70)
+          .distance(95)
       )
-      .force("charge", d3.forceManyBody().strength(-200))
+      .force("charge", d3.forceManyBody().strength(-220))
       .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collision", d3.forceCollide().radius(30));
+      .force("collision", d3.forceCollide().radius(28));
 
     // Render links
     const link = g
       .append("g")
-      .attr("stroke", "#475569")
-      .attr("stroke-opacity", 0.6)
+      .attr("stroke", "var(--line-bright, #94a3b8)")
+      .attr("stroke-opacity", 0.7)
       .selectAll("line")
       .data(links)
       .join("line")
-      .attr("stroke-width", (d) => Math.sqrt(d.value || 1) * 1.5);
+      .attr("stroke-width", (d) => Math.sqrt(d.value || 1) * 1.8);
 
     // Node group
     const node = g
@@ -110,29 +110,29 @@ export default function CitationGraph({ threadId, initialGraphData }) {
           })
       );
 
-    // Node circles & shapes
+    // Node circles
     node
       .append("circle")
-      .attr("r", (d) => (d.group === "Act" ? 18 : d.group === "PRECEDENT" ? 14 : 10))
+      .attr("r", (d) => (d.group === "Act" ? 16 : d.group === "PRECEDENT" ? 12 : 9))
       .attr("fill", (d) => {
-        if (d.group === "Act") return "#f59e0b"; // Gold
+        if (d.group === "Act") return "#f59e0b"; // Gold / Amber
         if (d.group === "PRECEDENT") return "#a855f7"; // Purple
         if (d.group === "RULE") return "#06b6d4"; // Cyan
         return "#3b82f6"; // Blue
       })
-      .attr("stroke", "#ffffff")
+      .attr("stroke", "var(--surface, #ffffff)")
       .attr("stroke-width", 2);
 
-    // Node labels
+    // Node text labels
     node
       .append("text")
       .text((d) => d.label)
-      .attr("x", 14)
+      .attr("x", 12)
       .attr("y", 4)
-      .attr("fill", "#e2e8f0")
-      .attr("font-size", "10px")
-      .attr("font-family", "sans-serif")
-      .attr("font-weight", (d) => (d.group === "Act" ? "bold" : "normal"));
+      .attr("fill", "var(--ink, #1e293b)")
+      .attr("font-size", "11px")
+      .attr("font-family", "var(--font-mono, monospace)")
+      .attr("font-weight", (d) => (d.group === "Act" ? "bold" : "600"));
 
     // Tooltip hover title
     node.append("title").text((d) => `${d.label} (${d.group})`);
@@ -153,42 +153,52 @@ export default function CitationGraph({ threadId, initialGraphData }) {
 
   if (loading) {
     return (
-      <div className="p-4 text-center text-slate-400 text-sm animate-pulse">
-        🌐 Building Legal Citation Co-Occurrence Graph...
+      <div className="p-4 text-center text-xs font-mono text-[var(--brass)] animate-pulse border border-[var(--line)] rounded-xl bg-[var(--surface)]">
+        🌐 Building Statutory Citation Co-Occurrence Network...
       </div>
     );
   }
 
   if (error || !graphData || !graphData.nodes || graphData.nodes.length === 0) {
     return (
-      <div className="p-4 text-center text-slate-500 text-xs italic">
+      <div className="p-3 text-center text-xs font-mono text-[var(--ink-dim)] italic border border-[var(--line)] rounded-xl bg-[var(--surface)]">
         Citation network graph available after verdict adjudication.
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
-      <div className="flex items-center justify-between mb-2">
-        <h4 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
-          <span>🌐</span> Interactive Statutory Citation Co-Occurrence Network
+    <div
+      className="p-4 rounded-xl border border-[var(--line)] shadow-lg space-y-3"
+      style={{ backgroundColor: "var(--surface)", color: "var(--ink)", maxWidth: "100%" }}
+    >
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-serif font-semibold text-[var(--ink)] flex items-center gap-2">
+          <span>🌐</span> Statutory Citation Co-Occurrence Network
         </h4>
-        <span className="text-xs text-slate-400">D3 Force Layout (Drag & Zoom)</span>
+        <span className="text-xs font-mono text-[var(--brass)] px-2 py-0.5 rounded bg-[var(--brass-light)] border border-[var(--line-bright)]">
+          D3 Force Layout
+        </span>
       </div>
-      <div className="border border-slate-800 rounded-lg overflow-hidden bg-slate-950">
+
+      <div
+        className="border border-[var(--line)] rounded-lg overflow-hidden"
+        style={{ backgroundColor: "var(--bg)", height: "230px" }}
+      >
         <svg ref={svgRef}></svg>
       </div>
-      <div className="flex items-center justify-center gap-4 mt-3 text-xs text-slate-400">
-        <span className="flex items-center gap-1">
+
+      <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-[var(--ink-muted)] pt-1">
+        <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> Act Root
         </span>
-        <span className="flex items-center gap-1">
+        <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Statutory Section
         </span>
-        <span className="flex items-center gap-1">
+        <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block"></span> Precedent Case
         </span>
-        <span className="flex items-center gap-1">
+        <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 inline-block"></span> Official Rule
         </span>
       </div>

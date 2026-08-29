@@ -60,12 +60,6 @@ export default function Landing() {
             ))}
           </div>
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="mt-auto py-8 border-t border-[var(--line)] text-center text-xs font-mono text-[var(--ink-dim)]">
-        <p>LexAgent — Consumer Protection Act 2019 Legal Intelligence Platform © 2026</p>
-      </footer>
     </div>
   );
 }

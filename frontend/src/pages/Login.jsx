@@ -149,10 +149,6 @@ export default function Login() {
           </div>
         </div>
       </main>
-
-      <footer className="font-mono text-muted" style={{ padding: "20px", borderTop: "1px solid var(--line)", textAlign: "center", fontSize: "0.75rem" }}>
-        LexAgent — Consumer Protection Act 2019 Legal Intelligence Platform © 2026
-      </footer>
     </div>
   );
 }

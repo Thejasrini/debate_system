@@ -70,17 +70,19 @@ export default function Navbar() {
               </Link>
               <Link
                 to="/signup"
-                className="font-mono"
                 style={{
                   display: "inline-block",
-                  padding: "6px 16px",
+                  padding: "7px 18px",
                   borderRadius: "6px",
                   backgroundColor: "var(--brass)",
                   color: "var(--bg)",
                   textDecoration: "none",
-                  fontSize: "0.82rem",
-                  fontWeight: "bold",
-                  boxShadow: "0 2px 8px rgba(201, 164, 94, 0.25)"
+                  fontSize: "0.85rem",
+                  fontWeight: "700",
+                  fontFamily: "var(--font-sans)",
+                  whiteSpace: "nowrap",
+                  letterSpacing: "0.2px",
+                  boxShadow: "0 2px 8px rgba(201, 164, 94, 0.3)"
                 }}
               >
                 Sign Up

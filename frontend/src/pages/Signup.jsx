@@ -59,24 +59,6 @@ export default function Signup() {
       <main style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", maxWidth: "900px", margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
         {/* Header Branding */}
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div
-            className="font-mono"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "4px 14px",
-              borderRadius: "20px",
-              border: "1px solid var(--line-bright)",
-              backgroundColor: "var(--brass-light)",
-              color: "var(--brass)",
-              fontSize: "0.78rem",
-              marginBottom: "16px"
-            }}
-          >
-            <span>⚖️ Consumer Protection Act, 2019 Platform</span>
-          </div>
-
           <h1 className="font-serif text-brass" style={{ fontSize: "2.5rem", margin: "0 0 10px 0", letterSpacing: "0.5px" }}>
             Welcome to <span style={{ textDecoration: "underline", textDecorationColor: "var(--line-bright)" }}>LexAgent</span>
           </h1>
@@ -437,10 +419,6 @@ export default function Signup() {
           </div>
         )}
       </main>
-
-      <footer className="font-mono text-muted" style={{ padding: "20px", borderTop: "1px solid var(--line)", textAlign: "center", fontSize: "0.75rem" }}>
-        LexAgent — Consumer Protection Act 2019 Legal Intelligence Platform © 2026
-      </footer>
     </div>
   );
 }

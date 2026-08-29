@@ -20,18 +20,19 @@ export default function Landing() {
           LexAgent employs adversarial legal intelligence (Petitioner Counsel vs. Respondent Counsel) grounded by a 2-layer statutory validator and judicial bench verdict.
         </p>
 
-        <div className="flex items-center justify-center space-x-4 pt-4">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "16px", paddingTop: "16px" }}>
           <Link
-            to="/new-case"
-            className="px-8 py-3.5 rounded-lg font-mono text-sm font-semibold bg-[var(--brass)] text-[var(--bg)] hover:bg-[var(--brass-hover)] transition shadow-lg"
+            to="/courtroom"
+            className="btn-brass font-mono"
+            style={{
+              padding: "14px 32px",
+              fontSize: "0.92rem",
+              fontWeight: "bold",
+              textDecoration: "none",
+              boxShadow: "0 4px 16px rgba(201, 164, 94, 0.3)"
+            }}
           >
-            Start a Case →
-          </Link>
-          <Link
-            to="/how-it-works"
-            className="px-8 py-3.5 rounded-lg font-mono text-sm font-semibold border border-[var(--line)] text-[var(--ink)] hover:border-[var(--brass)] transition"
-          >
-            How It Works
+            Launch Courtroom Terminal →
           </Link>
         </div>
       </section>

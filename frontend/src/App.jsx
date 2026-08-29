@@ -11,7 +11,6 @@ import NewCase from "./pages/NewCase";
 import DebateStream from "./pages/DebateStream";
 import Verdict from "./pages/Verdict";
 import Dashboard from "./pages/Dashboard";
-import HowItWorks from "./pages/HowItWorks";
 import Profile from "./pages/Profile";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import StyleGuide from "./pages/StyleGuide";
@@ -23,14 +22,12 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/* Primary Entry Page on http://localhost:5173/ is Signup & Role Selection */}
-            <Route path="/" element={<Signup />} />
-
-            {/* Explicit Auth Routes */}
-            <Route path="/signup" element={<Signup />} />
+            {/* Public Auth & Landing */}
+            <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
 
-            {/* Main Courtroom Terminal */}
+            {/* Main Courtroom Engine Alias Routes */}
             <Route
               path="/courtroom"
               element={
@@ -49,7 +46,6 @@ function App() {
             />
 
             {/* Information & Design System */}
-            <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/style-guide" element={<StyleGuide />} />
 
             {/* Protected User Routes */}

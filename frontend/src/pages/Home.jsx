@@ -474,14 +474,6 @@ export default function Home() {
               </button>
 
               <button
-                onClick={() => { setIsNavDrawerOpen(false); navigate("/how-it-works"); }}
-                className="btn-outline-brass"
-                style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}
-              >
-                <span>💡</span> How It Works
-              </button>
-
-              <button
                 onClick={() => { setIsNavDrawerOpen(false); navigate("/profile"); }}
                 className="btn-outline-brass"
                 style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px" }}

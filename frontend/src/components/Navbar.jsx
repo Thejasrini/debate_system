@@ -42,9 +42,6 @@ export default function Navbar() {
               <Link to="/dashboard" className={`navbar-link ${isActive("/dashboard") ? "active" : ""}`} style={{ color: isActive("/dashboard") ? "var(--brass)" : "var(--ink-muted)", textDecoration: "none", fontSize: "0.88rem" }}>
                 Dashboard
               </Link>
-              <Link to="/how-it-works" className={`navbar-link ${isActive("/how-it-works") ? "active" : ""}`} style={{ color: isActive("/how-it-works") ? "var(--brass)" : "var(--ink-muted)", textDecoration: "none", fontSize: "0.88rem" }}>
-                How It Works
-              </Link>
               <Link to="/profile" className={`navbar-link ${isActive("/profile") ? "active" : ""}`} style={{ color: isActive("/profile") ? "var(--brass)" : "var(--ink-muted)", textDecoration: "none", fontSize: "0.88rem" }}>
                 Profile
               </Link>
